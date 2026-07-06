@@ -138,16 +138,12 @@ export default function Navbar() {
     { name: "Contact (Kontak)", href: "/contact", icon: <Phone className="w-4 h-4" /> },
   ];
 
-  const shouldUseDarkText = !isSticky && (pathname.startsWith("/artikel/") && pathname !== "/artikel");
+  const shouldUseDarkText = false; // Always use light text on solid dark blue header
 
   return (
     <header
       id="main-header"
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 py-4 px-6 md:px-14 lg:px-16 flex items-center justify-between border-b ${
-        isSticky
-          ? "bg-[#0B1B2B]/95 backdrop-blur-md shadow-lg border-white/5"
-          : "bg-transparent border-transparent"
-      }`}
+      className="fixed top-0 inset-x-0 z-50 transition-all duration-300 py-4 px-6 md:px-14 lg:px-16 flex items-center justify-between border-b bg-[#0B1B2B]/95 backdrop-blur-md shadow-lg border-white/5"
       ref={dropdownRef}
     >
       {/* Brand Logo */}
