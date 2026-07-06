@@ -27,6 +27,12 @@ jobs:
           cd dws-nextjs
           npm run build
 
+      - name: Build Sanity Studio
+        run: |
+          cd studio
+          npm install --legacy-peer-deps
+          npm run build
+
       - name: Compress Project Files
         run: |
           tar -czf ../project.tar.gz --exclude=.git --exclude=.github .

@@ -175,6 +175,21 @@ else
     npm run build
 fi
 
+# ==========================================
+# SANITY STUDIO DEPLOYMENT
+# ==========================================
+echo ""
+echo "🎨 Deploy Sanity Studio CMS..."
+cd $PROJECT_DIR/studio
+if [ -d "dist" ] && [ -f "dist/index.html" ]; then
+    echo "✅ Sanity Studio sudah di-build di runner, melewati npm build."
+else
+    echo "📦 Install studio dependencies..."
+    npm install --legacy-peer-deps
+    echo "🏗️ Building Sanity Studio..."
+    npm run build
+fi
+
 # Pastikan direktori log Caddy ada dan diatur hak aksesnya secara rekursif
 mkdir -p /var/log/caddy /etc/caddy /var/lib/caddy
 chown -R caddy:caddy /var/log/caddy /etc/caddy /var/lib/caddy 2>/dev/null || true
