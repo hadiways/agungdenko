@@ -28,89 +28,57 @@ jobs:
             echo "🚀 Memulai proses deploy..."
 
             # ── Deteksi OS Version untuk Remi ───────────────────
-            OS_VER=$(grep "^VERSION_ID" /etc/os-release | cut -d'"' -f2 | cut -d'.' -f1)
+            OS_VER=$(cat /etc/os-release | grep "^VERSION_ID" | cut -d'"' -f2 | cut -d'.' -f1)
             echo "📋 OS Version: $OS_VER"
 
             # ── Install Git ──────────────────────────────────────
             if ! command -v git &>/dev/null; then
               echo "📦 Install git..."
-              if command -v dnf &>/dev/null; then
-                dnf install -y git
-              else
-                yum install -y git
-              fi
+              yum install -y git
             fi
 
-            # ── Upgrade PHP ke 8.3 jika belum memenuhi syarat ───
+            # ── Install/Upgrade PHP 8.3 ──────────────────────────
             PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "0.0")
             echo "🐘 PHP versi saat ini: $PHP_VER"
-            PHP_MAJOR=$(echo "$PHP_VER" | cut -d'.' -f1)
-            PHP_MINOR=$(echo "$PHP_VER" | cut -d'.' -f2)
 
-            # Butuh minimal PHP 8.2 untuk Laravel 12
-            NEED_UPGRADE=0
-            if [ "$PHP_MAJOR" -lt 8 ]; then
-              NEED_UPGRADE=1
-            elif [ "$PHP_MAJOR" -eq 8 ] && [ "$PHP_MINOR" -lt 2 ]; then
-              NEED_UPGRADE=1
-            fi
+            if [[ "$PHP_VER" != "8.2" && "$PHP_VER" != "8.3" && "$PHP_VER" != "8.4" ]]; then
+              echo "⚙️ Install PHP 8.3 dari Remi..."
 
-            if [ "$NEED_UPGRADE" -eq 1 ]; then
-              echo "⚙️ PHP $PHP_VER tidak memenuhi syarat (butuh >=8.2), upgrade ke PHP 8.3..."
+              # Install EPEL + Remi repo
+              dnf install -y epel-release 2>/dev/null || yum install -y epel-release
+              dnf install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || \
+              yum install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm"
 
-              if command -v dnf &>/dev/null; then
-                dnf install -y epel-release 2>/dev/null || true
-                dnf install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || true
-                dnf module reset php -y 2>/dev/null || true
-                dnf module enable php:remi-8.3 -y 2>/dev/null || true
-                dnf remove -y 'php*' 2>/dev/null || true
-                dnf install -y \
-                  php php-fpm php-cli php-common \
-                  php-mysqlnd php-pdo php-mbstring \
-                  php-xml php-curl php-zip \
-                  php-bcmath php-gd php-intl \
-                  php-opcache php-process php-tokenizer
-              else
-                yum install -y epel-release 2>/dev/null || true
-                yum install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || true
-                yum-config-manager --enable remi-php83 2>/dev/null || true
-                yum remove -y 'php*' 2>/dev/null || true
-                yum install -y \
-                  php php-fpm php-cli php-common \
-                  php-mysqlnd php-pdo php-mbstring \
-                  php-xml php-curl php-zip \
-                  php-bcmath php-gd php-intl \
-                  php-opcache php-process php-tokenizer
-              fi
+              # Reset module PHP lama, aktifkan PHP 8.3 dari Remi
+              dnf module reset php -y || true
+              dnf module enable php:remi-8.3 -y
 
-              # Pastikan symlink php tersedia di PATH
-              PHP_BIN=$(command -v php83 2>/dev/null || command -v php 2>/dev/null || echo "")
-              if [ -n "$PHP_BIN" ] && [ "$PHP_BIN" != "/usr/local/bin/php" ]; then
-                ln -sf "$PHP_BIN" /usr/local/bin/php 2>/dev/null || true
-              fi
+              # Hapus PHP lama jika ada
+              dnf remove -y php php-* 2>/dev/null || true
 
-              systemctl enable php-fpm 2>/dev/null || systemctl enable php83-php-fpm 2>/dev/null || true
-              systemctl restart php-fpm 2>/dev/null || systemctl restart php83-php-fpm 2>/dev/null || true
+              # Install PHP 8.3 + ekstensi Laravel
+              dnf install -y \
+                php php-fpm php-cli php-common \
+                php-mysqlnd php-pdo php-mbstring \
+                php-xml php-curl php-zip \
+                php-bcmath php-gd php-intl \
+                php-opcache php-process php-tokenizer
 
-              echo "✅ PHP setelah upgrade: $(php -v | head -1)"
+              systemctl enable php-fpm && systemctl start php-fpm
+              echo "✅ PHP $(php -v | head -1)"
             else
-              echo "✅ PHP $PHP_VER sudah memenuhi syarat (>=8.2)"
+              echo "✅ PHP $PHP_VER sudah memenuhi syarat"
             fi
-
-            # ── Verifikasi PHP versi akhir ───────────────────────
-            php -v | head -1
 
             # ── Install Composer ─────────────────────────────────
-            if ! command -v composer &>/dev/null && [ ! -f /usr/local/bin/composer ]; then
+            if ! command -v composer &>/dev/null; then
               echo "🎼 Install Composer..."
               curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-              chmod +x /usr/local/bin/composer
             fi
-            /usr/local/bin/composer --version
-            echo "✅ Composer siap"
+            echo "✅ $(composer --version)"
 
             # ── Install Caddy ────────────────────────────────────
-            if ! command -v caddy &>/dev/null && [ ! -f /usr/local/bin/caddy ]; then
+            if ! command -v caddy &>/dev/null; then
               echo "🌐 Install Caddy via binary..."
               curl -fsSL "https://github.com/caddyserver/caddy/releases/download/v2.9.1/caddy_2.9.1_linux_amd64.tar.gz" \
                 -o /tmp/caddy.tar.gz
@@ -155,5 +123,4 @@ jobs:
             # ── Jalankan deploy.sh ───────────────────────────────
             echo "⚙️ Menjalankan deploy.sh..."
             cd "$PROJECT_DIR"
-            export PATH="/usr/local/bin:$PATH"
             bash deploy.sh
