@@ -172,6 +172,15 @@ echo ""
 echo "🚀 Setup Backend Laravel..."
 cd /opt/dws-portal/backend
 
+# Pastikan struktur folder storage lengkap
+mkdir -p storage/app/public
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/framework/testing
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
+
 if [ ! -f .env ]; then
     cp .env.production .env
     php artisan key:generate --force

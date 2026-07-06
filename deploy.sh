@@ -29,6 +29,15 @@ echo ""
 echo "⚙️ Deploy Backend (Laravel 12)..."
 cd $BACKEND_DIR
 
+# Pastikan struktur folder storage lengkap
+mkdir -p storage/app/public
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/framework/testing
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
+
 # Copy production environment jika belum ada
 if [ ! -f .env ]; then
     echo "⚠️ .env belum ada, menyalin .env.production..."
