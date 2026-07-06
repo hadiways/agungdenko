@@ -155,7 +155,7 @@ export default function Navbar() {
         <div className="flex items-center justify-center bg-brand-blue text-white font-display font-extrabold text-lg sm:text-xl px-3 py-1 rounded-md skew-x-12 transform transition-transform group-hover:scale-105 duration-300 shadow-md">
           <span className="-skew-x-12">DWS</span>
         </div>
-        <div className="flex flex-col hidden sm:flex">
+        <div className="flex flex-col hidden xl:flex">
           <span className={`font-display font-bold text-xs tracking-wide leading-none transition-colors ${
             shouldUseDarkText ? "text-brand-darkBg group-hover:text-brand-blue" : "text-white group-hover:text-brand-blueLight"
           }`}>
@@ -447,7 +447,7 @@ export default function Navbar() {
       <div className="hidden lg:flex items-center gap-6 shrink-0">
         
         {/* Phone Contact Block */}
-        <div className="flex flex-col text-right">
+        <div className="hidden xl:flex flex-col text-right">
           <a href="tel:+622112345678" className={`text-xs font-semibold flex items-center gap-1.5 justify-end transition-colors ${
             shouldUseDarkText ? "text-gray-600 hover:text-brand-darkBg" : "text-gray-300 hover:text-white"
           }`}>
