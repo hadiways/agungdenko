@@ -3,6 +3,8 @@ import { ARTICLES_BY_TAG_QUERY, ALL_TAGS_QUERY } from "@/lib/sanity/queries";
 import ArticleGrid from "@/components/article/ArticleGrid";
 import Breadcrumbs from "@/components/article/Breadcrumbs";
 
+export const dynamicParams = false;
+
 // Generate tags static params for compilation
 export async function generateStaticParams() {
   try {

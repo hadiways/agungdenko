@@ -10,6 +10,8 @@ import TOC from "@/components/article/TOC";
 import RelatedArticles from "@/components/article/RelatedArticles";
 import { notFound } from "next/navigation";
 
+export const dynamicParams = false;
+ 
 // Generate static params for Next static export compilation
 export async function generateStaticParams() {
   try {

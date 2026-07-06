@@ -3,6 +3,8 @@ import { ARTICLES_BY_CATEGORY_QUERY, ALL_CATEGORIES_QUERY } from "@/lib/sanity/q
 import ArticleGrid from "@/components/article/ArticleGrid";
 import Breadcrumbs from "@/components/article/Breadcrumbs";
 
+export const dynamicParams = false;
+
 // Generate categories static slugs
 export async function generateStaticParams() {
   try {
