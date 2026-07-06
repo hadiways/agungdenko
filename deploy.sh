@@ -88,6 +88,28 @@ else
 fi
 mysql -e "FLUSH PRIVILEGES;"
 
+# Generate missing framework migrations if not present
+echo "📋 Memeriksa migrasi framework yang diperlukan..."
+if ! ls database/migrations/*_create_permission_tables.php &>/dev/null; then
+    echo "   -> Publishing Spatie Permission migrations..."
+    php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+fi
+
+if ! ls database/migrations/*_create_cache_table.php &>/dev/null; then
+    echo "   -> Creating cache table migration..."
+    php artisan cache:table
+fi
+
+if ! ls database/migrations/*_create_sessions_table.php &>/dev/null; then
+    echo "   -> Creating sessions table migration..."
+    php artisan session:table
+fi
+
+if ! ls database/migrations/*_create_jobs_table.php &>/dev/null; then
+    echo "   -> Creating jobs table migration..."
+    php artisan queue:table
+fi
+
 # Jalankan migrasi database
 echo "🗄️ Menjalankan migrasi database..."
 php artisan migrate --force
