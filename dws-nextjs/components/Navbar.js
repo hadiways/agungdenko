@@ -151,7 +151,7 @@ export default function Navbar() {
         <div className="flex items-center justify-center bg-brand-blue text-white font-display font-extrabold text-lg sm:text-xl px-3 py-1 rounded-md skew-x-12 transform transition-transform group-hover:scale-105 duration-300 shadow-md">
           <span className="-skew-x-12">DWS</span>
         </div>
-        <div className="flex flex-col hidden xl:flex">
+        <div className="flex flex-col hidden 2xl:flex">
           <span className={`font-display font-bold text-xs tracking-wide leading-none transition-colors ${
             shouldUseDarkText ? "text-brand-darkBg group-hover:text-brand-blue" : "text-white group-hover:text-brand-blueLight"
           }`}>
@@ -397,53 +397,13 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Dropdown 5: Perusahaan */}
-        <div 
-          className="relative"
-          onMouseEnter={() => setActiveDropdown('perusahaan')}
-        >
-          <button 
-            className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
-              activeDropdown === 'perusahaan' || pathname.startsWith("/about") || pathname.startsWith("/testimonials") || pathname.startsWith("/gallery") || pathname.startsWith("/contact") 
-                ? "text-brand-blueLight" 
-                : (shouldUseDarkText ? "text-gray-700 hover:text-brand-blue" : "text-white hover:text-brand-blueLight")
-            }`}
-          >
-            <span>Perusahaan</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'perusahaan' ? 'rotate-180' : ''}`} />
-          </button>
-
-          {activeDropdown === 'perusahaan' && (
-            <div 
-              className="absolute right-0 top-full mt-4 w-56 bg-[#0E1F30] border border-white/5 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-1 animate-fade-in"
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              {companyLinks.map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/5 text-gray-300 hover:text-white transition-colors group/item"
-                >
-                  <div className="text-brand-blueLight group-hover/item:scale-105 transition-transform">
-                    {item.icon}
-                  </div>
-                  <span className="text-xs font-bold">
-                    {item.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
       </nav>
 
       {/* Right Side: Phone & Dual CTA Actions (Desktop) */}
       <div className="hidden lg:flex items-center gap-6 shrink-0">
         
         {/* Phone Contact Block */}
-        <div className="hidden xl:flex flex-col text-right">
+        <div className="hidden 2xl:flex flex-col text-right">
           <a href="tel:+622112345678" className={`text-xs font-semibold flex items-center gap-1.5 justify-end transition-colors ${
             shouldUseDarkText ? "text-gray-600 hover:text-brand-darkBg" : "text-gray-300 hover:text-white"
           }`}>

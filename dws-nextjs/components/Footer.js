@@ -157,6 +157,47 @@ Berikut detail kebutuhan saya:
         </div>
       </div>
 
+      {/* Footer Quick Links Grid */}
+      <div className="h-[1px] bg-white/5 my-8"></div>
+      <div className="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-xs mb-8">
+        <div>
+          <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Produk Populer</h4>
+          <ul className="space-y-2">
+            <li><a href="/products?cat=diesel" className="hover:text-brand-blueLight transition-colors">Forklift Diesel</a></li>
+            <li><a href="/products?cat=electric" className="hover:text-brand-blueLight transition-colors">Forklift Electric</a></li>
+            <li><a href="/products?cat=reach-truck" className="hover:text-brand-blueLight transition-colors">Reach Truck</a></li>
+            <li><a href="/products?cat=stacker" className="hover:text-brand-blueLight transition-colors">Electric Stacker</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Layanan</h4>
+          <ul className="space-y-2">
+            <li><a href="/services/sales" className="hover:text-brand-blueLight transition-colors">Sales (Penjualan)</a></li>
+            <li><a href="/services/rental" className="hover:text-brand-blueLight transition-colors">Rental (Sewa)</a></li>
+            <li><a href="/services/maintenance" className="hover:text-brand-blueLight transition-colors">Service & Maintenance</a></li>
+            <li><a href="/services/sparepart" className="hover:text-brand-blueLight transition-colors">Suku Cadang</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Solusi Industri</h4>
+          <ul className="space-y-2">
+            <li><a href="/solutions/warehouse" className="hover:text-brand-blueLight transition-colors">Warehouse (Gudang)</a></li>
+            <li><a href="/solutions/manufacturing" className="hover:text-brand-blueLight transition-colors">Manufacturing (Pabrik)</a></li>
+            <li><a href="/solutions/logistics" className="hover:text-brand-blueLight transition-colors">Logistics (Distribusi)</a></li>
+            <li><a href="/solutions/cold-storage" className="hover:text-brand-blueLight transition-colors">Cold Storage (Gudang Beku)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Perusahaan</h4>
+          <ul className="space-y-2">
+            <li><a href="/about" className="hover:text-brand-blueLight transition-colors">About Us</a></li>
+            <li><a href="/gallery" className="hover:text-brand-blueLight transition-colors">Gallery</a></li>
+            <li><a href="/testimonials" className="hover:text-brand-blueLight transition-colors">Testimonials</a></li>
+            <li><a href="/artikel" className="hover:text-brand-blueLight transition-colors">Artikel & News</a></li>
+          </ul>
+        </div>
+      </div>
+
       <div className="h-[1px] bg-white/5 mb-8"></div>
 
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 gap-4">

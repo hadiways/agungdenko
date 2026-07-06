@@ -24,7 +24,7 @@ export default function HeroIndustryRotator() {
   }, []);
 
   return (
-    <span className="inline-block relative h-[1.15em] min-w-[180px] sm:min-w-[240px] md:min-w-[320px] overflow-hidden align-bottom">
+    <span className="inline-block relative h-[1.15em] min-w-[280px] sm:min-w-[380px] md:min-w-[480px] lg:min-w-[620px] overflow-hidden align-bottom">
       <span
         key={index}
         className="absolute left-0 bottom-0 text-brand-blueLight font-extrabold animate-keyword-slide-up whitespace-nowrap"
