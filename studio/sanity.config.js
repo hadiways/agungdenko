@@ -10,7 +10,7 @@ export default defineConfig({
   title: "DWS Portal CMS",
 
   projectId: "wqs3olp2",
-  dataset: "v1zvkmuhqrd4czoao5nb85h1",
+  dataset: "production",
 
   plugins: [structureTool()],
 
