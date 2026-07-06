@@ -47,7 +47,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const article = await sanityFetch(ARTICLE_BY_SLUG_QUERY, { slug });
 
   if (!article) return {};
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ArticleDetailPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // Parallel fetch Sanity data
   const [article, categories, allArticles, tags] = await Promise.all([

@@ -65,6 +65,8 @@ export default function ServicesPage() {
                     <div className="w-12 h-12 rounded-2xl bg-white border border-brand-blueLight/20 flex items-center justify-center mb-6 text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all duration-300">
                       {s.icon && s.icon.startsWith("<svg") ? (
                         <div dangerouslySetInnerHTML={{ __html: s.icon }} />
+                      ) : s.icon ? (
+                        <img src={s.icon} alt={s.title} className="w-6 h-6 object-contain" />
                       ) : (
                         <span className="text-brand-blue font-bold text-xs">🛠</span>
                       )}

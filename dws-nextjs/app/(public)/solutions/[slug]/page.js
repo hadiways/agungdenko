@@ -127,7 +127,7 @@ export async function generateStaticParams() {
 }
 
 export default async function IndustrySolutionPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const content = SOLUTIONS_CONTENT[slug];
 
   if (!content) {

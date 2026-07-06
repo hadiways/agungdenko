@@ -20,7 +20,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const tags = await sanityFetch(ALL_TAGS_QUERY);
   const currentTag = tags.find((t) => t.slug === slug);
   const name = currentTag ? currentTag.name : "Tag";
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function TagPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const tags = await sanityFetch(ALL_TAGS_QUERY);
   const currentTag = tags.find((t) => t.slug === slug);
   const name = currentTag ? currentTag.name : "Tag";

@@ -20,7 +20,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const categories = await sanityFetch(ALL_CATEGORIES_QUERY);
   const currentCategory = categories.find((cat) => cat.slug === slug);
   const name = currentCategory ? currentCategory.name : "Kategori";
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function CategoryPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const categories = await sanityFetch(ALL_CATEGORIES_QUERY);
   const currentCategory = categories.find((cat) => cat.slug === slug);
   const name = currentCategory ? currentCategory.name : "Kategori";

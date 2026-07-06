@@ -125,6 +125,28 @@ export default function AdminContentPage() {
   };
 
   // Image uploads to Base64 helpers
+  const handleServiceIconUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setServiceForm(prev => ({ ...prev, icon: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFeatureIconUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFeatureForm(prev => ({ ...prev, icon: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleGalleryUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -240,15 +262,26 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-[10px] font-bold uppercase mb-1">Struktur SVG Icon (HTML)</label>
-                    <textarea
-                      required
-                      rows="4"
-                      value={serviceForm.icon}
-                      onChange={(e) => setServiceForm({ ...serviceForm, icon: e.target.value })}
-                      placeholder="Masukkan tag <svg>...</svg>"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-[10px] font-mono focus:outline-none focus:border-brand-blue"
-                    ></textarea>
+                    <label className="block text-gray-500 text-[10px] font-bold uppercase mb-1">Unggah Icon / Gambar (SVG, PNG, JPG)</label>
+                    <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleServiceIconUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <UploadCloud className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                      <span className="text-[10px] text-gray-500 block">Pilih berkas icon</span>
+                    </div>
+                    {serviceForm.icon && (
+                      <div className="mt-2 h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center p-1.5 border border-gray-200 overflow-hidden">
+                        {serviceForm.icon.startsWith("<svg") ? (
+                          <div className="w-full h-full text-brand-blue" dangerouslySetInnerHTML={{ __html: serviceForm.icon }} />
+                        ) : (
+                          <img src={serviceForm.icon} alt="Preview" className="max-h-full max-w-full object-contain" />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <button type="submit" className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase py-2.5 rounded-lg">
                     Tambah Layanan
@@ -264,7 +297,13 @@ export default function AdminContentPage() {
                     services.map((item) => (
                       <div key={item._id} className="p-4 border border-gray-150 rounded-2xl flex items-center justify-between gap-3 bg-gray-50/50">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-brand-blue/10 flex items-center justify-center text-brand-blue" dangerouslySetInnerHTML={{ __html: item.icon }}></div>
+                          <div className="w-9 h-9 rounded-lg bg-brand-blue/10 flex items-center justify-center text-brand-blue p-1.5 overflow-hidden">
+                            {item.icon && item.icon.startsWith("<svg") ? (
+                              <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: item.icon }}></div>
+                            ) : (
+                              <img src={item.icon} alt={item.title} className="max-h-full max-w-full object-contain" />
+                            )}
+                          </div>
                           <span className="text-xs font-bold text-brand-darkBg">{item.title}</span>
                         </div>
                         <button onClick={() => handleDelete("services", item._id)} className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition-colors">
@@ -516,15 +555,26 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-[10px] font-bold uppercase mb-1">Struktur SVG Icon (HTML)</label>
-                    <textarea
-                      required
-                      rows="3"
-                      value={featureForm.icon}
-                      onChange={(e) => setFeatureForm({ ...featureForm, icon: e.target.value })}
-                      placeholder="Masukkan tag <svg>...</svg>"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-[10px] font-mono focus:outline-none focus:border-brand-blue"
-                    ></textarea>
+                    <label className="block text-gray-500 text-[10px] font-bold uppercase mb-1">Unggah Icon / Gambar (SVG, PNG, JPG)</label>
+                    <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFeatureIconUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <UploadCloud className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                      <span className="text-[10px] text-gray-500 block">Pilih berkas icon</span>
+                    </div>
+                    {featureForm.icon && (
+                      <div className="mt-2 h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center p-1.5 border border-gray-200 overflow-hidden">
+                        {featureForm.icon.startsWith("<svg") ? (
+                          <div className="w-full h-full text-brand-blue" dangerouslySetInnerHTML={{ __html: featureForm.icon }} />
+                        ) : (
+                          <img src={featureForm.icon} alt="Preview" className="max-h-full max-w-full object-contain" />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-gray-500 text-[10px] font-bold uppercase mb-1">Deskripsi Singkat</label>
@@ -551,7 +601,13 @@ export default function AdminContentPage() {
                     features.map((item) => (
                       <div key={item._id} className="p-4 border border-gray-150 rounded-2xl flex items-start justify-between gap-4 bg-gray-55/30">
                         <div className="flex gap-3">
-                          <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0" dangerouslySetInnerHTML={{ __html: item.icon }}></div>
+                          <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 p-1.5 overflow-hidden">
+                            {item.icon && item.icon.startsWith("<svg") ? (
+                              <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: item.icon }}></div>
+                            ) : (
+                              <img src={item.icon} alt={item.title} className="max-h-full max-w-full object-contain" />
+                            )}
+                          </div>
                           <div>
                             <h4 className="text-xs font-bold text-brand-darkBg">{item.title}</h4>
                             <p className="text-gray-500 text-[11px] leading-relaxed mt-0.5">{item.description}</p>

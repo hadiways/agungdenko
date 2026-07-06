@@ -112,7 +112,7 @@ export async function generateStaticParams() {
 }
 
 export default async function ResourcesDetailPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const content = RESOURCES_CONTENT[slug];
 
   if (!content) {

@@ -287,6 +287,8 @@ export default function Home() {
                   <div className="w-12 h-12 rounded-full bg-brand-lightBg flex items-center justify-center mb-4 group-hover:bg-brand-blue transition-colors duration-300 shadow-sm shadow-brand-blue/5">
                     {b.icon && b.icon.startsWith("<svg") ? (
                       <div dangerouslySetInnerHTML={{ __html: b.icon }} />
+                    ) : b.icon ? (
+                      <img src={b.icon} alt={b.title} className="w-6 h-6 object-contain" />
                     ) : (
                       <span className="text-brand-blue font-bold text-xs">★</span>
                     )}
@@ -389,6 +391,8 @@ export default function Home() {
                       <div className="w-10 h-10 rounded-xl bg-brand-blue/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue transition-colors">
                         {s.icon && s.icon.startsWith("<svg") ? (
                           <span className="group-hover:text-white transition-colors duration-200" dangerouslySetInnerHTML={{ __html: s.icon }} />
+                        ) : s.icon ? (
+                          <img src={s.icon} alt={s.title} className="w-5 h-5 object-contain" />
                         ) : (
                           <span className="text-white text-xs font-bold">🛠</span>
                         )}

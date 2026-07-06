@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Sliders
+  Sliders,
+  HelpCircle
 } from "lucide-react";
 
 export default function AdminSidebar({ handleLogout }) {
@@ -46,7 +47,8 @@ export default function AdminSidebar({ handleLogout }) {
     { name: "Produk", href: "/admin/products", icon: Package },
     { name: "Kelola Konten", href: "/admin/content", icon: Sliders },
     { name: "Customer Leads", href: "/admin/customers", icon: Users },
-    { name: "Traffic Analytics", href: "/admin/analytics", icon: BarChart3 },
+    { name: "Leads Analytics", href: "/admin/analytics", icon: BarChart3 },
+    { name: "Panduan Admin", href: "/admin/help", icon: HelpCircle },
   ];
 
   return (

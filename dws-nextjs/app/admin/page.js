@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { sanityFetch } from "@/lib/sanity/fetch";
+import { PRODUCTS_QUERY } from "@/lib/sanity/queries";
 import {
   TrendingUp,
-  Eye,
   Package,
   Users,
   ArrowRight,
   PhoneCall,
-  MailOpen,
   PlusCircle,
   Download,
   PieChart,
@@ -28,29 +28,10 @@ export default function AdminDashboard() {
     avatar: ""
   });
 
-  const recentLeads = [
-    {
-      company: "PT Sumber Makmur",
-      action: "Meminta penawaran: Forklift Electric",
-      time: "10 Menit yang lalu",
-      icon: PhoneCall,
-      iconBg: "bg-green-50 text-green-600",
-    },
-    {
-      company: "CV Mitra Logistik",
-      action: "Meminta penawaran: Reach Truck",
-      time: "45 Menit yang lalu",
-      icon: MailOpen,
-      iconBg: "bg-blue-50 text-brand-blue",
-    },
-    {
-      company: "PT Industri Nusantara",
-      action: "Meminta penawaran: Scissor Lift",
-      time: "2 Jam yang lalu",
-      icon: PhoneCall,
-      iconBg: "bg-green-50 text-green-600",
-    },
-  ];
+  // Dynamic statistics states
+  const [productsCount, setProductsCount] = useState(0);
+  const [leadsCount, setLeadsCount] = useState(0);
+  const [recentLeadsList, setRecentLeadsList] = useState([]);
 
   const quickActions = [
     {
@@ -70,16 +51,51 @@ export default function AdminDashboard() {
     },
   ];
 
-  // Load Sales Profile from LocalStorage
+  // Load configuration and data states on mount
   useEffect(() => {
-    const saved = localStorage.getItem("sales_profile");
-    if (saved) {
+    // 1. Load Sales Profile
+    const savedProfile = localStorage.getItem("sales_profile");
+    if (savedProfile) {
       try {
-        setSalesForm(JSON.parse(saved));
+        setSalesForm(JSON.parse(savedProfile));
       } catch (e) {
         console.error("Failed to load sales profile", e);
       }
     }
+
+    // 2. Load Customer Leads
+    const savedLeads = localStorage.getItem("quote_leads");
+    let activeLeads = [];
+    if (savedLeads) {
+      try {
+        activeLeads = JSON.parse(savedLeads);
+      } catch (e) {
+        activeLeads = [];
+      }
+    } else {
+      localStorage.setItem("quote_leads", JSON.stringify([]));
+    }
+    setLeadsCount(activeLeads.length);
+    setRecentLeadsList(activeLeads.slice(0, 3));
+
+    // 3. Load dynamic products count
+    async function loadProductsCount() {
+      try {
+        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
+        const baseProducts = cmsProducts || [];
+        const savedProducts = localStorage.getItem("custom_products");
+        let customCount = 0;
+        if (savedProducts) {
+          try {
+            customCount = JSON.parse(savedProducts).length;
+          } catch (e) {}
+        }
+        setProductsCount(baseProducts.length + customCount);
+      } catch (err) {
+        console.error("Failed to fetch products count for stats", err);
+      }
+    }
+    loadProductsCount();
   }, []);
 
   const handleTextChange = (e) => {
@@ -147,38 +163,23 @@ export default function AdminDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
           <div>
             <h1 className="text-brand-darkBg font-display font-extrabold text-2xl md:text-3xl">Dashboard Overview</h1>
-            <p className="text-gray-500 text-sm mt-1">Selamat datang kembali, Agung Ramdhani. Berikut adalah performa bisnis hari ini.</p>
+            <p className="text-gray-500 text-sm mt-1">Selamat datang kembali, {salesForm.name}. Berikut adalah performa bisnis Anda.</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
-              Live Traffic Active
+              Live Portal Active
             </span>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* StatCard 1: Traffic */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-shadow">
-            <div className="space-y-2">
-              <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block">Total Traffic</span>
-              <h3 className="text-brand-darkBg font-display font-extrabold text-3xl">24,850</h3>
-              <span className="text-green-500 text-xs font-semibold flex items-center gap-1">
-                <TrendingUp className="w-3.5 h-3.5" />
-                +12.4% vs minggu lalu
-              </span>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors duration-200">
-              <Eye className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* StatCard 2: Total Produk */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* StatCard 1: Total Produk */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-shadow">
             <div className="space-y-2">
               <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block">Total Produk</span>
-              <h3 className="text-brand-darkBg font-display font-extrabold text-3xl">6 Active</h3>
+              <h3 className="text-brand-darkBg font-display font-extrabold text-3xl">{productsCount} Aktif</h3>
               <span className="text-gray-400 text-xs block">Forklift & Lifting Equipment</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors duration-200">
@@ -186,15 +187,12 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* StatCard 3: Total Leads */}
+          {/* StatCard 2: Total Leads */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-shadow">
             <div className="space-y-2">
               <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block">Total Leads</span>
-              <h3 className="text-brand-darkBg font-display font-extrabold text-3xl">142 Quotes</h3>
-              <span className="text-green-500 text-xs font-semibold flex items-center gap-1">
-                <TrendingUp className="w-3.5 h-3.5" />
-                +8.5% conversion rate
-              </span>
+              <h3 className="text-brand-darkBg font-display font-extrabold text-3xl">{leadsCount} Quotes</h3>
+              <span className="text-gray-400 text-xs block">Data Permintaan Penawaran Harga</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors duration-200">
               <Users className="w-6 h-6" />
@@ -215,23 +213,24 @@ export default function AdminDashboard() {
               </Link>
             </div>
             <div className="divide-y divide-gray-100">
-              {recentLeads.map((lead, idx) => {
-                const LeadIcon = lead.icon;
-                return (
+              {recentLeadsList.length > 0 ? (
+                recentLeadsList.map((lead, idx) => (
                   <div key={idx} className="py-4 flex items-center justify-between first:pt-0 last:pb-0 group">
                     <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-lg ${lead.iconBg} flex items-center justify-center`}>
-                        <LeadIcon className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">
+                        <PhoneCall className="w-4 h-4" />
                       </div>
                       <div>
                         <h4 className="text-brand-darkBg font-bold text-sm">{lead.company}</h4>
-                        <p className="text-gray-400 text-xs mt-0.5">{lead.action}</p>
+                        <p className="text-gray-400 text-xs mt-0.5">Meminta penawaran: {lead.product}</p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400">{lead.time}</span>
+                    <span className="text-[10px] text-gray-400">{lead.date}</span>
                   </div>
-                );
-              })}
+                ))
+              ) : (
+                <p className="py-6 text-center text-gray-400 text-xs">Belum ada leads permintaan penawaran.</p>
+              )}
             </div>
           </div>
 
@@ -246,125 +245,125 @@ export default function AdminDashboard() {
                     <Link
                       key={idx}
                       href={action.href}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-brand-lightBg hover:bg-brand-blue/5 hover:text-brand-blue border border-transparent hover:border-brand-blueLight/20 text-gray-600 transition-all font-medium text-sm"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-blue/30 hover:bg-brand-blue/5 text-gray-600 hover:text-brand-blue font-bold text-xs transition-all duration-200"
                     >
-                      <ActionIcon className="w-5 h-5 text-brand-blue" />
-                      {action.name}
+                      <ActionIcon className="w-4 h-4 text-brand-blue" />
+                      <span>{action.name}</span>
                     </Link>
                   );
                 })}
               </div>
             </div>
-            <div className="bg-brand-darkBg rounded-xl p-4 text-center border border-white/5 shadow-inner">
-              <p className="text-gray-400 text-xs leading-relaxed">PT Denko Wahana Sakti Admin Portal. Selalu jaga kerahasiaan data leads customer.</p>
-            </div>
           </div>
-
         </div>
 
-        {/* Dynamic Sales Profile Configuration Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-            <UserCheck className="w-6 h-6 text-brand-blue" />
-            <h3 className="text-brand-darkBg font-display font-bold text-lg">Pengaturan Profil Sales Consultant (Tanpa Database)</h3>
+        {/* Dynamic Sales profile setting panel */}
+        <div id="sales-profile-settings" className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-brand-darkBg font-display font-bold text-lg flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-brand-blue" />
+              <span>Pengaturan Profil Sales (WhatsApp Contact)</span>
+            </h3>
+            <p className="text-gray-400 text-xs mt-1">Sesuaikan informasi kontak sales pada kartu mengambang public page secara instan.</p>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left: Avatar Upload */}
-            <div className="lg:col-span-4 flex flex-col items-center justify-center border border-gray-100 rounded-2xl p-6 bg-brand-lightBg/40 space-y-4">
-              <div className="relative group">
-                <div className="w-28 h-28 rounded-full bg-brand-blue/10 border-2 border-brand-blueLight overflow-hidden flex items-center justify-center shadow-lg">
-                  {salesForm.avatar ? (
-                    <img src={salesForm.avatar} alt="Avatar Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-brand-blue font-display font-extrabold text-4xl">
-                      {salesForm.name.split(" ").map(n => n[0]).join("")}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="text-center w-full">
-                <label className="block bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-colors cursor-pointer w-full text-center">
-                  <span>Pilih Foto Avatar</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                </label>
-                <span className="text-[10px] text-gray-400 mt-2 block">Direkomendasikan foto bulat rasio 1:1</span>
-              </div>
-            </div>
-
-            {/* Right: Text Configuration Inputs */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSaveProfile} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Nama Konsultan Sales</label>
+                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Nama Sales</label>
                 <input
                   type="text"
                   id="name"
                   value={salesForm.name}
                   onChange={handleTextChange}
+                  placeholder="Contoh: Agung Ramdhani"
                   required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
+                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Jabatan (Role)</label>
+                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Jabatan / Role</label>
                 <input
                   type="text"
                   id="role"
                   value={salesForm.role}
                   onChange={handleTextChange}
+                  placeholder="Contoh: Sales Consultant"
                   required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
+                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue transition-all"
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">No. WhatsApp Target (Negara + Kode Area)</label>
-                <input
-                  type="text"
-                  id="phone"
-                  value={salesForm.phone}
-                  onChange={handleTextChange}
-                  placeholder="Contoh: 6285724380347"
-                  required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-500 text-xs font-bold uppercase mb-2">No. WhatsApp (Format 628xxx)</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    value={salesForm.phone}
+                    onChange={handleTextChange}
+                    placeholder="Contoh: 6285724380347"
+                    required
+                    className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Status Ketersediaan</label>
+                  <input
+                    type="text"
+                    id="status"
+                    value={salesForm.status}
+                    onChange={handleTextChange}
+                    placeholder="Contoh: Online sekarang"
+                    required
+                    className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-6 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-brand-blue/15 border border-brand-blue/30 flex items-center justify-center text-brand-blue overflow-hidden shrink-0">
+                  {salesForm.avatar ? (
+                    <img src={salesForm.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-bold">{salesForm.name.charAt(0)}</span>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-brand-darkBg font-bold text-sm">Avatar Profile</h4>
+                  <p className="text-gray-400 text-xs">Pilih file foto profile sales (PNG, JPG maks 1MB).</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue/10 file:text-brand-blue hover:file:bg-brand-blue/20"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Status Online / Kehadiran</label>
-                <input
-                  type="text"
-                  id="status"
-                  value={salesForm.status}
-                  onChange={handleTextChange}
-                  required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
-                />
-              </div>
-
-              <div className="md:col-span-2 pt-4 flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition-colors"
+                  className="flex-1 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg hover:shadow-brand-blue/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Simpan Profil</span>
+                  Simpan Pengaturan Profil
                 </button>
-
                 <button
                   type="button"
                   onClick={handleResetProfile}
-                  className="border border-gray-200 hover:bg-gray-55/10 text-gray-600 font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-xs uppercase py-3.5 px-6 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Reset Default</span>
+                  Reset
                 </button>
               </div>
             </div>
           </form>
         </div>
-
       </div>
 
       {/* Footer */}

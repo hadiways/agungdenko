@@ -8,6 +8,19 @@ import { UploadCloud, Trash2 } from "lucide-react";
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const [customProducts, setCustomProducts] = useState([]);
+
+  const DEFAULT_CATEGORIES = [
+    "Forklift Diesel",
+    "Forklift Electric",
+    "Reach Truck",
+    "Stacker",
+    "Hand Pallet",
+    "Scissor Lift",
+    "Wheel Loader"
+  ];
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [newCategory, setNewCategory] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -15,7 +28,7 @@ export default function AdminProductsPage() {
     image: "",
   });
 
-  // Load custom products from localStorage and default products from Sanity CMS on mount
+  // Load custom products, categories from localStorage and default products from Sanity CMS on mount
   useEffect(() => {
     async function loadAllProducts() {
       try {
@@ -34,6 +47,17 @@ export default function AdminProductsPage() {
           }
         } else {
           setProducts(baseProducts);
+        }
+
+        const savedCats = localStorage.getItem("product_categories");
+        if (savedCats) {
+          try {
+            setCategories(JSON.parse(savedCats));
+          } catch (e) {
+            console.error("Failed to parse categories", e);
+          }
+        } else {
+          localStorage.setItem("product_categories", JSON.stringify(DEFAULT_CATEGORIES));
         }
       } catch (err) {
         console.error("Failed to fetch products for admin", err);
@@ -69,6 +93,30 @@ export default function AdminProductsPage() {
     cleaned = cleaned.replace(/on\w+\s*=\s*(['"])[^\1]*?\1/gi, "");
     cleaned = cleaned.replace(/<[^>]*>/g, "");
     return cleaned.trim();
+  };
+
+  const handleAddCategory = (e) => {
+    e.preventDefault();
+    if (!newCategory.trim()) return;
+    const sanitized = sanitizeInput(newCategory.trim());
+    if (categories.includes(sanitized)) {
+      alert("Kategori sudah terdaftar.");
+      return;
+    }
+    const updated = [...categories, sanitized];
+    setCategories(updated);
+    localStorage.setItem("product_categories", JSON.stringify(updated));
+    setNewCategory("");
+    alert("Kategori baru berhasil ditambahkan!");
+  };
+
+  const handleDeleteCategory = (catToDelete) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus kategori "${catToDelete}"?`)) {
+      const updated = categories.filter(c => c !== catToDelete);
+      setCategories(updated);
+      localStorage.setItem("product_categories", JSON.stringify(updated));
+      alert("Kategori berhasil dihapus!");
+    }
   };
 
   const handleAddProduct = (e) => {
@@ -126,8 +174,9 @@ export default function AdminProductsPage() {
         {/* Main Layout: Form Left, Active Products Right */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Form upload produk */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6 h-fit">
-            <h3 className="text-brand-darkBg font-display font-bold text-lg border-b border-gray-100 pb-4">Tambah Produk Baru</h3>
+          <div className="space-y-6 h-fit">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6 h-fit">
+              <h3 className="text-brand-darkBg font-display font-bold text-lg border-b border-gray-100 pb-4">Tambah Produk Baru</h3>
             
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
@@ -153,13 +202,9 @@ export default function AdminProductsPage() {
                   className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 >
                   <option value="" disabled>Pilih Kategori</option>
-                  <option value="Forklift Diesel">Forklift Diesel</option>
-                  <option value="Forklift Electric">Forklift Electric</option>
-                  <option value="Reach Truck">Reach Truck</option>
-                  <option value="Stacker">Stacker</option>
-                  <option value="Hand Pallet">Hand Pallet</option>
-                  <option value="Scissor Lift">Scissor Lift</option>
-                  <option value="Wheel Loader">Wheel Loader</option>
+                  {categories.map((cat, idx) => (
+                    <option key={idx} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
               
@@ -201,6 +246,44 @@ export default function AdminProductsPage() {
                 Simpan Produk Kustom
               </button>
             </form>
+            </div>
+
+            {/* Manage Categories Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4 h-fit">
+              <h3 className="text-brand-darkBg font-display font-bold text-sm border-b border-gray-100 pb-3 flex items-center justify-between">
+                <span>Kelola Kategori</span>
+                <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">
+                  {categories.length} Total
+                </span>
+              </h3>
+              
+              {/* Form Add */}
+              <form onSubmit={handleAddCategory} className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="Kategori Baru..."
+                  className="flex-1 bg-brand-lightBg border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-blue"
+                />
+                <button type="submit" className="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors">
+                  Tambah
+                </button>
+              </form>
+
+              {/* List Categories */}
+              <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                {categories.map((cat, idx) => (
+                  <div key={idx} className="flex items-center justify-between px-3 py-2 border border-gray-100 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                    <span className="text-xs text-gray-700 font-semibold">{cat}</span>
+                    <button type="button" onClick={() => handleDeleteCategory(cat)} className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Active products grid */}

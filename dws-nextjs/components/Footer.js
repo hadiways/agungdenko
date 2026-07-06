@@ -101,6 +101,22 @@ Berikut detail kebutuhan saya:
 *Produk Diminati:* ${product || "Lainnya / Konsultasi"}
 *Pesan/Detail:* ${message}`;
 
+    try {
+      const existingLeads = JSON.parse(localStorage.getItem("quote_leads") || "[]");
+      const dateNow = new Date();
+      const formattedDate = `${String(dateNow.getDate()).padStart(2, '0')}/${String(dateNow.getMonth() + 1).padStart(2, '0')}/${dateNow.getFullYear()} - ${String(dateNow.getHours()).padStart(2, '0')}:${String(dateNow.getMinutes()).padStart(2, '0')}`;
+      const newLead = {
+        company: company || name || "Perseorangan",
+        phone: phone,
+        waLink: `https://wa.me/${phone.replace(/[^\d]/g, "")}`,
+        product: product || "Lainnya / Konsultasi",
+        date: formattedDate,
+      };
+      localStorage.setItem("quote_leads", JSON.stringify([newLead, ...existingLeads]));
+    } catch (err) {
+      console.error("Failed to save lead to localStorage", err);
+    }
+
     const encodedText = encodeURIComponent(baseText);
     const waUrl = `https://api.whatsapp.com/send?phone=${targetNumber}&text=${encodedText}`;
     window.open(waUrl, "_blank");
