@@ -30,6 +30,7 @@ import {
   FileText
 } from "lucide-react";
 
+// Redesigned and optimized article detail page layout
 export const dynamicParams = false;
  
 export async function generateStaticParams() {
