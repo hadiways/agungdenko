@@ -20,8 +20,25 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            echo "🚀 Connecting to server..."
-            cd /var/www/dws-portal
-            
-            echo "📥 Running deploy script..."
+            PROJECT_DIR="/var/www/dws-portal"
+            REPO_URL="https://github.com/hadiways/agungdenko.git"
+
+            echo "🚀 Memulai proses deploy..."
+
+            # Buat direktori parent jika belum ada
+            mkdir -p /var/www
+
+            # Clone repo jika belum ada, pull jika sudah ada
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              echo "📥 Repo belum ada, cloning dari GitHub..."
+              git clone "$REPO_URL" "$PROJECT_DIR"
+            else
+              echo "📥 Repo sudah ada, pulling perubahan terbaru..."
+              cd "$PROJECT_DIR"
+              git pull origin main
+            fi
+
+            echo "⚙️ Menjalankan deploy script..."
+            cd "$PROJECT_DIR"
             bash deploy.sh
+
