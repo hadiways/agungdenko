@@ -15,6 +15,13 @@ www.agungdenko.asia {
 agungdenko.asia {
 	root * /opt/dws-portal/dws-nextjs/out
 
+	# Dynamic sitemap routing
+	route /sitemap.xml {
+		root * /opt/dws-portal/backend/public
+		rewrite * /sitemap.php
+		php_fastcgi 127.0.0.1:9000
+	}
+
 	file_server
 
 	# Fallback ke Next.js routes
