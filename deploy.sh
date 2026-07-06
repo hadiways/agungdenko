@@ -40,6 +40,38 @@ fi
 echo "📦 Install composer dependencies..."
 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
+# Pastikan MariaDB/MySQL terinstall dan berjalan
+echo "⚙️ Memeriksa status MariaDB/MySQL..."
+if ! command -v mysql &>/dev/null; then
+    echo "📦 MariaDB belum terinstall, menginstall MariaDB..."
+    yum install -y mariadb-server
+    systemctl enable mariadb
+    systemctl start mariadb
+else
+    if ! systemctl is-active --quiet mariadb && ! systemctl is-active --quiet mysqld; then
+        echo "🔄 Memulai service MariaDB..."
+        systemctl start mariadb || systemctl start mysqld || service mariadb start || service mysqld start
+    fi
+fi
+
+# Buat database jika belum ada
+echo "🗄️ Memastikan database exists..."
+DB_NAME=$(grep -E "^DB_DATABASE=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs)
+DB_USER=$(grep -E "^DB_USERNAME=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs)
+DB_PASS=$(grep -E "^DB_PASSWORD=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs)
+
+echo "📋 Database name: $DB_NAME"
+mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
+
+# Jika user bukan root, buat user tersebut jika belum ada
+if [ "$DB_USER" != "root" ] && [ -n "$DB_USER" ]; then
+    mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';"
+    mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'127.0.0.1';"
+    mysql -e "FLUSH PRIVILEGES;"
+fi
+
 # Jalankan migrasi database
 echo "🗄️ Menjalankan migrasi database..."
 php artisan migrate --force
