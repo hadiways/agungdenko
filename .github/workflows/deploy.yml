@@ -12,6 +12,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Compress Project Files
+        run: |
+          tar -czf project.tar.gz --exclude=.git --exclude=.github .
+
+      - name: Copy Archive to Server via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          source: "project.tar.gz"
+          target: "/tmp"
+
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@master
         with:
@@ -23,19 +37,12 @@ jobs:
             set -e
             export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
             PROJECT_DIR="/opt/dws-portal"
-            REPO_URL="https://github.com/hadiways/agungdenko.git"
 
             echo "🚀 Memulai proses deploy..."
 
             # ── Deteksi OS Version untuk Remi ───────────────────
             OS_VER=$(cat /etc/os-release | grep "^VERSION_ID" | cut -d'"' -f2 | cut -d'.' -f1)
             echo "📋 OS Version: $OS_VER"
-
-            # ── Install Git ──────────────────────────────────────
-            if ! command -v git &>/dev/null; then
-              echo "📦 Install git..."
-              yum install -y git
-            fi
 
             # ── Install/Upgrade PHP 8.3 ──────────────────────────
             PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "0.0")
@@ -110,15 +117,11 @@ jobs:
               echo "✅ Caddy $(caddy version)"
             fi
 
-            # ── Clone atau Pull Repo ─────────────────────────────
-            mkdir -p /opt
-            if [ ! -d "$PROJECT_DIR/.git" ]; then
-              echo "📥 Cloning repository..."
-              git clone "$REPO_URL" "$PROJECT_DIR"
-            else
-              echo "📥 Pulling perubahan terbaru..."
-              cd "$PROJECT_DIR" && git pull origin main
-            fi
+            # ── Ekstrak Perubahan Terbaru ────────────────────────
+            echo "📦 Mengekstrak file project..."
+            mkdir -p "$PROJECT_DIR"
+            tar -xzf /tmp/project.tar.gz -C "$PROJECT_DIR"
+            rm -f /tmp/project.tar.gz
 
             # ── Jalankan deploy.sh ───────────────────────────────
             echo "⚙️ Menjalankan deploy.sh..."
