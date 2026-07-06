@@ -117,19 +117,19 @@ export default function Home() {
             {/* Trust Indicators (One horizontal row, compact badges with small Lucide icons) */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2 text-xs sm:text-sm text-gray-300">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-brand-blueLight" />
+                <ShieldCheck size={16} className="text-brand-blueLight shrink-0" />
                 <span>Produk Original</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <Tag className="w-4 h-4 text-brand-blueLight" />
+                <Tag size={16} className="text-brand-blueLight shrink-0" />
                 <span>Harga Kompetitif</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-brand-blueLight" />
+                <Zap size={16} className="text-brand-blueLight shrink-0" />
                 <span>Support Cepat</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <Package className="w-4 h-4 text-brand-blueLight" />
+                <Package size={16} className="text-brand-blueLight shrink-0" />
                 <span>Sparepart Ready</span>
               </span>
             </div>
@@ -140,7 +140,7 @@ export default function Home() {
                 href="/contact?subject=penawaran"
                 className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group text-sm uppercase tracking-wider"
               >
-                <FileText className="w-4 h-4" />
+                <FileText size={16} className="shrink-0" />
                 <span>Minta Penawaran</span>
               </Link>
               
@@ -149,7 +149,7 @@ export default function Home() {
                 className="flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150 text-sm uppercase tracking-wider group"
               >
                 <span>Lihat Produk</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1 shrink-0" />
               </Link>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="w-full border border-brand-blue hover:bg-brand-blue/10 text-brand-blueLight font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
             >
-              <MessageSquare className="w-4 h-4 text-brand-blueLight" />
+              <MessageSquare size={16} className="text-brand-blueLight shrink-0" />
               <span>Chat WhatsApp</span>
             </a>
           </div>
