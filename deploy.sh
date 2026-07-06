@@ -211,15 +211,9 @@ supervisorctl reread 2>/dev/null && supervisorctl update 2>/dev/null || true
 echo "✅ Validasi Caddyfile..."
 caddy validate --config /etc/caddy/Caddyfile
 
-# Reload atau Restart Caddy
-echo "🔄 Reload / Restart Caddy..."
-if systemctl is-active --quiet caddy; then
-    echo "   -> Caddy aktif, melakukan reload..."
-    systemctl reload caddy || systemctl restart caddy
-else
-    echo "   -> Caddy tidak aktif, memulai ulang..."
-    systemctl restart caddy || systemctl start caddy
-fi
+# Restart Caddy
+echo "🔄 Restarting Caddy..."
+systemctl restart caddy || systemctl start caddy
 
 echo ""
 echo "✅ Deployment selesai!"
