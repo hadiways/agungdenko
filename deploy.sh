@@ -12,6 +12,9 @@
 
 set -e
 
+# Pastikan /usr/local/bin ada di PATH (lokasi composer & php hasil install Remi)
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
 PROJECT_DIR="/opt/dws-portal"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/dws-nextjs"
@@ -35,7 +38,7 @@ fi
 
 # Install composer dependencies (tanpa dev)
 echo "📦 Install composer dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction
+/usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
 # Jalankan migrasi database
 echo "🗄️ Menjalankan migrasi database..."
