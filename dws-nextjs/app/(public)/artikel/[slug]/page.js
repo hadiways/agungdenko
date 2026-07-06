@@ -26,7 +26,8 @@ import {
   Box, 
   Building2, 
   Mail, 
-  Hash 
+  Hash,
+  FileText
 } from "lucide-react";
 
 export const dynamicParams = false;
