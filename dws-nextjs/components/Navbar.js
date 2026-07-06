@@ -44,6 +44,26 @@ export default function Navbar() {
   const pathname = usePathname();
   const dropdownRef = useRef(null);
 
+  const [salesProfile, setSalesProfile] = useState({
+    name: "Agung Ramdhani",
+    phone: "6285724380347"
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sales_profile");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSalesProfile({
+          name: parsed.name,
+          phone: parsed.phone
+        });
+      } catch (e) {
+        console.error("Failed to load navbar sales profile", e);
+      }
+    }
+  }, []);
+
   // Handle sticky navbar on scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -417,7 +437,7 @@ export default function Navbar() {
 
         {/* Secondary CTA: Hubungi Sales */}
         <a
-          href="https://wa.me/6285724380347?text=Halo%20Sales%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20alat%20material%20handling."
+          href={`https://wa.me/${salesProfile.phone}?text=Halo%20Sales%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20alat%20material%20handling.`}
           target="_blank"
           rel="noopener noreferrer"
           className={`flex items-center gap-1.5 border font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all ${

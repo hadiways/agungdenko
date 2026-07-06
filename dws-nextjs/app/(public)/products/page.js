@@ -1,8 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PRODUCTS_DATA } from "@/data/products";
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState(PRODUCTS_DATA);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("custom_products");
+    if (saved) {
+      try {
+        const custom = JSON.parse(saved);
+        setProducts([...custom, ...PRODUCTS_DATA]);
+      } catch (e) {
+        console.error("Failed to load custom products", e);
+      }
+    }
+  }, []);
+
   const triggerSelectProduct = (productName) => {
     window.dispatchEvent(new CustomEvent("select-product", { detail: productName }));
   };
@@ -22,7 +37,7 @@ export default function ProductsPage() {
       <section className="py-24 px-6 md:px-12 bg-white">
         <div className="container mx-auto">
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PRODUCTS_DATA.map((p) => (
+            {products.map((p) => (
               <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
                 <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
                   <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,9 +14,31 @@ import {
   X
 } from "lucide-react";
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ handleLogout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const [salesProfile, setSalesProfile] = useState({
+    name: "Agung Ramdhani",
+    role: "Administrator",
+    avatar: ""
+  });
+
+  // Fetch updated profile configurations
+  useEffect(() => {
+    const saved = localStorage.getItem("sales_profile");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSalesProfile({
+          name: parsed.name,
+          role: parsed.role,
+          avatar: parsed.avatar
+        });
+      } catch (e) {
+        console.error("Failed to load sidebar sales profile", e);
+      }
+    }
+  }, []);
 
   const menuItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -65,17 +87,25 @@ export default function AdminSidebar() {
         </nav>
 
         {/* User Profile info at bottom */}
-        <div className="p-4 border-t border-white/5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-blue/20 border border-brand-blueLight/20 flex items-center justify-center text-brand-blueLight">
-            <User className="w-5 h-5" />
+        <div className="p-4 border-t border-white/5 flex items-center gap-3 bg-brand-darkCard/30">
+          <div className="w-10 h-10 rounded-full bg-brand-blue/20 border border-brand-blueLight/20 flex items-center justify-center text-brand-blueLight overflow-hidden shrink-0">
+            {salesProfile.avatar ? (
+              <img src={salesProfile.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-5 h-5" />
+            )}
           </div>
-          <div className="flex-1 overflow-hidden">
-            <h4 className="text-white text-xs font-semibold truncate">Agung Ramdhani</h4>
-            <p className="text-gray-500 text-[10px] truncate">Administrator</p>
+          <div className="flex-1 overflow-hidden text-left">
+            <h4 className="text-white text-xs font-semibold truncate">{salesProfile.name}</h4>
+            <p className="text-gray-500 text-[10px] truncate">{salesProfile.role}</p>
           </div>
-          <Link href="/" className="text-gray-500 hover:text-white transition-colors" title="Keluar ke Web Utama">
+          <button 
+            onClick={handleLogout} 
+            className="text-gray-500 hover:text-white transition-colors" 
+            title="Keluar dari Panel Admin"
+          >
             <LogOut className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -132,13 +162,27 @@ export default function AdminSidebar() {
             </div>
           </div>
           <div className="flex items-center gap-3 border-t border-white/5 pt-4">
-            <div className="w-10 h-10 rounded-full bg-brand-blue/20 flex items-center justify-center text-brand-blueLight">
-              <User className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-brand-blue/20 flex items-center justify-center text-brand-blueLight overflow-hidden shrink-0">
+              {salesProfile.avatar ? (
+                <img src={salesProfile.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5" />
+              )}
             </div>
-            <div className="flex-1">
-              <h4 className="text-white text-xs font-semibold">Agung Ramdhani</h4>
-              <p className="text-gray-500 text-[10px]">Administrator</p>
+            <div className="flex-1 text-left">
+              <h4 className="text-white text-xs font-semibold">{salesProfile.name}</h4>
+              <p className="text-gray-500 text-[10px]">{salesProfile.role}</p>
             </div>
+            <button 
+              onClick={() => {
+                setIsMenuOpen(false);
+                handleLogout();
+              }}
+              className="text-gray-500 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </nav>
       </div>

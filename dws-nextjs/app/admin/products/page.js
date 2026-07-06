@@ -1,16 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PRODUCTS_DATA } from "@/data/products";
 import { UploadCloud, Trash2 } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState(PRODUCTS_DATA);
+  const [customProducts, setCustomProducts] = useState([]);
   const [form, setForm] = useState({
     name: "",
     category: "",
     description: "",
+    image: "",
   });
+
+  // Load custom products from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("custom_products");
+    if (saved) {
+      try {
+        const custom = JSON.parse(saved);
+        setCustomProducts(custom);
+        setProducts([...custom, ...PRODUCTS_DATA]);
+      } catch (e) {
+        console.error("Failed to parse custom products", e);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     setForm({
@@ -19,23 +35,55 @@ export default function AdminProductsPage() {
     });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((prev) => ({
+          ...prev,
+          image: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProduct = (e) => {
     e.preventDefault();
     const newProduct = {
-      id: form.name.toLowerCase().replace(/\s+/g, "-"),
+      id: "custom-" + Date.now() + "-" + form.name.toLowerCase().replace(/\s+/g, "-"),
       name: form.name,
-      image: "/images/products/forklift-electric.jpg", // default thumbnail
+      image: form.image || "/images/products/forklift-electric.jpg", // default fallback thumbnail
       category: form.category,
       description: form.description,
+      isCustom: true, // mark to identify custom items
     };
-    setProducts([newProduct, ...products]);
-    setForm({ name: "", category: "", description: "" });
-    alert("Produk berhasil ditambahkan ke katalog session!");
+
+    const updatedCustom = [newProduct, ...customProducts];
+    setCustomProducts(updatedCustom);
+    setProducts([...updatedCustom, ...PRODUCTS_DATA]);
+    localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
+
+    setForm({ name: "", category: "", description: "", image: "" });
+    alert("Produk berhasil ditambahkan ke katalog dinamis!");
   };
 
   const handleDeleteProduct = (id) => {
-    if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
-      setProducts(products.filter((p) => p.id !== id));
+    const targetProduct = products.find((p) => p.id === id);
+    if (!targetProduct) return;
+
+    if (!targetProduct.isCustom) {
+      alert("Produk bawaan sistem (default) tidak dapat dihapus.");
+      return;
+    }
+
+    if (confirm("Apakah Anda yakin ingin menghapus produk kustom ini?")) {
+      const updatedCustom = customProducts.filter((p) => p.id !== id);
+      setCustomProducts(updatedCustom);
+      setProducts([...updatedCustom, ...PRODUCTS_DATA]);
+      localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
+      alert("Produk berhasil dihapus!");
     }
   };
 
@@ -46,7 +94,7 @@ export default function AdminProductsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
           <div>
             <h1 className="text-brand-darkBg font-display font-extrabold text-2xl md:text-3xl">Manajemen Produk</h1>
-            <p className="text-gray-500 text-sm mt-1">Kelola katalog forklift dan alat berat PT Denko Wahana Sakti.</p>
+            <p className="text-gray-500 text-sm mt-1">Kelola katalog forklift dan alat berat PT Denko Wahana Sakti secara dinamis (tanpa database).</p>
           </div>
         </div>
 
@@ -64,9 +112,9 @@ export default function AdminProductsPage() {
                   id="name"
                   value={form.name}
                   onChange={handleChange}
-                  placeholder="Contoh: Forklift Electric Noblelift"
+                  placeholder="Contoh: Forklift Electric Noblelift 2 Ton"
                   required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
+                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 />
               </div>
               
@@ -77,24 +125,35 @@ export default function AdminProductsPage() {
                   value={form.category}
                   onChange={handleChange}
                   required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
+                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 >
                   <option value="" disabled>Pilih Kategori</option>
-                  <option value="Forklift">Forklift</option>
+                  <option value="Forklift Diesel">Forklift Diesel</option>
+                  <option value="Forklift Electric">Forklift Electric</option>
                   <option value="Reach Truck">Reach Truck</option>
                   <option value="Stacker">Stacker</option>
-                  <option value="Pallet">Pallet</option>
-                  <option value="Aerial Work Platform">Aerial Work Platform</option>
+                  <option value="Hand Pallet">Hand Pallet</option>
+                  <option value="Scissor Lift">Scissor Lift</option>
+                  <option value="Wheel Loader">Wheel Loader</option>
                 </select>
               </div>
               
               <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Upload Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-brand-blue transition-colors cursor-pointer group">
-                  <UploadCloud className="w-8 h-8 text-gray-400 group-hover:text-brand-blue transition-colors mb-2" />
-                  <span className="text-xs text-gray-500 font-semibold group-hover:text-brand-blue transition-colors">Pilih file gambar</span>
-                  <span className="text-[10px] text-gray-400 mt-1">PNG, JPG up to 5MB</span>
-                </div>
+                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Upload Gambar Produk</label>
+                <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-brand-blue transition-colors cursor-pointer group relative overflow-hidden min-h-[140px]">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                  {form.image ? (
+                    <div className="w-full h-24 flex items-center justify-center">
+                      <img src={form.image} alt="Preview" className="max-h-full max-w-full object-contain" />
+                    </div>
+                  ) : (
+                    <>
+                      <UploadCloud className="w-8 h-8 text-gray-400 group-hover:text-brand-blue transition-colors mb-2" />
+                      <span className="text-xs text-gray-500 font-semibold group-hover:text-brand-blue transition-colors">Pilih file gambar</span>
+                      <span className="text-[10px] text-gray-400 mt-1">PNG, JPG up to 5MB</span>
+                    </>
+                  )}
+                </label>
               </div>
 
               <div>
@@ -104,9 +163,9 @@ export default function AdminProductsPage() {
                   value={form.description}
                   onChange={handleChange}
                   rows="4"
-                  placeholder="Tuliskan spesifikasi, keunggulan, dan deskripsi produk..."
+                  placeholder="Tuliskan spesifikasi lengkap, keunggulan, dan detail lainnya..."
                   required
-                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
+                  className="w-full bg-brand-lightBg border border-gray-200 rounded-xl p-4 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 ></textarea>
               </div>
 
@@ -114,7 +173,7 @@ export default function AdminProductsPage() {
                 type="submit"
                 className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150"
               >
-                Simpan Produk
+                Simpan Produk Kustom
               </button>
             </form>
           </div>
@@ -131,21 +190,30 @@ export default function AdminProductsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {products.map((p) => (
                 <div key={p.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 group">
-                  <div className="w-20 h-20 rounded-xl bg-brand-lightBg flex-shrink-0 flex items-center justify-center p-2 border border-gray-100">
+                  <div className="w-20 h-20 rounded-xl bg-brand-lightBg flex-shrink-0 flex items-center justify-center p-2 border border-gray-100 overflow-hidden">
                     <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-brand-blue font-bold text-[9px] uppercase tracking-wider bg-brand-blue/10 px-2 py-0.5 rounded">{p.category}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-brand-blue font-bold text-[9px] uppercase tracking-wider bg-brand-blue/10 px-2 py-0.5 rounded">{p.category}</span>
+                      {p.isCustom && (
+                        <span className="text-green-600 font-bold text-[9px] uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded">Kustom</span>
+                      )}
+                    </div>
                     <h4 className="text-brand-darkBg font-bold text-sm truncate mt-1.5">{p.name}</h4>
                     <p className="text-gray-400 text-xs truncate mt-0.5">{p.description}</p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteProduct(p.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                    title="Hapus Produk"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {p.isCustom ? (
+                    <button
+                      onClick={() => handleDeleteProduct(p.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                      title="Hapus Produk"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-gray-300 font-semibold px-2 py-1 select-none">System</span>
+                  )}
                 </div>
               ))}
             </div>

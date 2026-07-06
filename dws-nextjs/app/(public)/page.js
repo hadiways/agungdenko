@@ -13,6 +13,14 @@ import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare } f
 export default function Home() {
   const scrollRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [salesProfile, setSalesProfile] = useState({
+    name: "Agung Ramdhani",
+    role: "Sales Consultant",
+    phone: "6285724380347",
+    status: "Online sekarang",
+    avatar: ""
+  });
+  const [products, setProducts] = useState(PRODUCTS_DATA);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -31,6 +39,27 @@ export default function Home() {
       el.classList.add("transition-all", "duration-700", "transform", "opacity-0", "translate-y-4");
       observer.observe(el);
     });
+
+    // Load dynamic sales profile
+    const savedProfile = localStorage.getItem("sales_profile");
+    if (savedProfile) {
+      try {
+        setSalesProfile(JSON.parse(savedProfile));
+      } catch (e) {
+        console.error("Failed to load sales profile", e);
+      }
+    }
+
+    // Load dynamic products
+    const savedProducts = localStorage.getItem("custom_products");
+    if (savedProducts) {
+      try {
+        const custom = JSON.parse(savedProducts);
+        setProducts([...custom, ...PRODUCTS_DATA]);
+      } catch (e) {
+        console.error("Failed to load custom products", e);
+      }
+    }
 
     return () => observer.disconnect();
   }, []);
@@ -159,23 +188,29 @@ export default function Home() {
             <div className="flex items-center gap-3.5">
               <div className="relative shrink-0">
                 <div className="w-12 h-12 rounded-full bg-brand-blue/20 border-2 border-brand-blueLight/60 overflow-hidden flex items-center justify-center">
-                  <span className="text-white font-display font-extrabold text-base">AR</span>
+                  {salesProfile.avatar ? (
+                    <img src={salesProfile.avatar} alt={salesProfile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-display font-extrabold text-base">
+                      {salesProfile.name.split(" ").map(n => n[0]).join("")}
+                    </span>
+                  )}
                 </div>
                 {/* Active Status Dot */}
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0E1F30] rounded-full animate-pulse"></span>
+                <span className="absolute bottom-0 right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-[#0E1F30] rounded-full animate-pulse"></span>
               </div>
               <div>
-                <h4 className="text-white font-bold text-sm tracking-wide leading-tight">Agung Ramdhani</h4>
-                <p className="text-gray-400 text-[10px] sm:text-xs">Sales Consultant</p>
+                <h4 className="text-white font-bold text-sm tracking-wide leading-tight">{salesProfile.name}</h4>
+                <p className="text-gray-400 text-[10px] sm:text-xs">{salesProfile.role}</p>
                 <span className="text-[9px] text-green-400 font-semibold flex items-center gap-1 mt-0.5">
-                  Online sekarang
+                  {salesProfile.status}
                 </span>
               </div>
             </div>
             
             {/* CTA Chat Whatsapp button (with premium outline outline message icon and brand colors) */}
             <a 
-              href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti."
+              href={`https://wa.me/${salesProfile.phone}?text=Halo%20Pak%20${encodeURIComponent(salesProfile.name)},%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti.`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full border border-brand-blue hover:bg-brand-blue/10 text-brand-blueLight font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
@@ -221,7 +256,7 @@ export default function Home() {
           </div>
 
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PRODUCTS_DATA.map((p) => (
+            {products.map((p) => (
               <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
                 <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
                   <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />

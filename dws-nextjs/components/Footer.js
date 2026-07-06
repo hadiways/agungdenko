@@ -12,6 +12,32 @@ export default function Footer() {
     message: "",
   });
 
+  const [salesProfile, setSalesProfile] = useState({
+    name: "Agung Ramdhani",
+    role: "Sales Executive - PT Denko Wahana Sakti",
+    phone: "6285724380347",
+    email: "agung.ramdhani@denkowahanasakti.co.id",
+    avatar: ""
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sales_profile");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSalesProfile({
+          name: parsed.name,
+          role: parsed.role,
+          phone: parsed.phone,
+          email: "agung.ramdhani@denkowahanasakti.co.id",
+          avatar: parsed.avatar
+        });
+      } catch (e) {
+        console.error("Failed to load footer sales profile", e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const handleSelectProduct = (e) => {
       setFormData((prev) => ({
@@ -37,8 +63,8 @@ export default function Footer() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const { name, company, phone, email, product, message } = formData;
-    const targetNumber = "6285724380347"; // Agung Ramdhani WA from Footer
-    const baseText = `Halo Pak Agung Ramdhani, saya ingin meminta penawaran harga unit dari website PT Denko Wahana Sakti.
+    const targetNumber = salesProfile.phone;
+    const baseText = `Halo Pak ${salesProfile.name}, saya ingin meminta penawaran harga unit dari website PT Denko Wahana Sakti.
 
 Berikut detail kebutuhan saya:
 *Nama:* ${name}
@@ -61,25 +87,29 @@ Berikut detail kebutuhan saya:
           <div>
             <h3 className="text-white font-display font-bold text-xl uppercase tracking-wider border-b-2 border-brand-blue pb-2 mb-4 inline-block">Hubungi Saya</h3>
             <div className="flex items-center gap-3 mt-4">
-              <div className="w-12 h-12 rounded-full bg-brand-blue/10 border border-brand-blue/30 flex items-center justify-center text-brand-blueLight">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              <div className="w-12 h-12 rounded-full bg-brand-blue/10 border border-brand-blue/30 flex items-center justify-center text-brand-blueLight overflow-hidden shrink-0">
+                {salesProfile.avatar ? (
+                  <img src={salesProfile.avatar} alt={salesProfile.name} className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                )}
               </div>
               <div>
-                <h4 className="text-white font-bold text-base">Agung Ramdhani</h4>
-                <p className="text-gray-400 text-xs">Sales Executive - PT Denko Wahana Sakti</p>
+                <h4 className="text-white font-bold text-base">{salesProfile.name}</h4>
+                <p className="text-gray-400 text-xs">{salesProfile.role}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <a href="https://wa.me/6285724380347" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-300 hover:text-brand-blueLight transition-colors group">
+            <a href={`https://wa.me/${salesProfile.phone}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-300 hover:text-brand-blueLight transition-colors group">
               <div className="w-9 h-9 rounded-lg bg-white/5 group-hover:bg-brand-blue/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-brand-blueLight fill-current" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                   <path fill="currentColor" fillRule="evenodd" d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" clipRule="evenodd"/>
                   <path fill="currentColor" d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z"/>
                 </svg>
               </div>
-              <span>0857-2438-0347</span>
+              <span>{salesProfile.phone}</span>
             </a>
 
             <a href="mailto:agung.ramdhani@denkowahanasakti.co.id" className="flex items-center gap-3 text-gray-300 hover:text-brand-blueLight transition-colors group">
