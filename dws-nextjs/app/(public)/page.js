@@ -7,6 +7,7 @@ import { PRODUCTS_DATA } from "@/data/products";
 import { SERVICES_DATA } from "@/data/services";
 import { TESTIMONIALS_DATA } from "@/data/testimonials";
 import { PARTNERS_DATA } from "@/data/partners";
+import HeroRotatingText from "@/components/HeroRotatingText";
 
 export default function Home() {
   const scrollRef = useRef(null);
@@ -94,53 +95,100 @@ export default function Home() {
         </div>
 
         <div className="container mx-auto px-6 md:px-12 relative z-10 flex flex-col justify-between h-full min-h-[70vh]">
-          <div className="max-w-3xl my-auto">
-            <span className="text-brand-blueLight font-bold text-xs uppercase tracking-widest bg-brand-blue/20 border border-brand-blueLight/30 px-3 py-1 rounded-full mb-6 inline-block">
-              PT Denko Wahana Sakti
+          <div className="max-w-3xl my-auto space-y-6">
+            {/* Badge */}
+            <span className="text-brand-blueLight font-bold text-xs uppercase tracking-widest bg-brand-blue/20 border border-brand-blueLight/30 px-3.5 py-1.5 rounded-full inline-block">
+              ✓ Distributor Resmi Material Handling
             </span>
             
-            <h1 className="text-white font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-tight mb-4">
-              Solusi Material Handling <span className="text-brand-accent">Terbaik</span> untuk Industri Anda
+            {/* Heading */}
+            <h1 className="text-white font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-tight">
+              Solusi Material Handling <br />
+              <span className="text-brand-blueLight">untuk Industri Modern</span>
             </h1>
             
-            <p className="text-brand-blueLight font-medium text-sm sm:text-base tracking-wide border-l-2 border-brand-blueLight pl-4 mb-6 leading-relaxed">
-              Forklift • Reach Truck • Stacker • Scissor Lift • Aerial Work Platform
+            {/* Description */}
+            <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
+              Kami menyediakan penjualan, rental, service, dan sparepart forklift dengan kualitas terbaik dan layanan profesional.
             </p>
+
+            {/* Rotating Text Block */}
+            <HeroRotatingText />
+
+            {/* Trust Points (Checkmarks Row) */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2 text-xs sm:text-sm text-gray-300">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                Produk Berkualitas
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                Layanan Terpercaya
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                Harga Kompetitif
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                Support Cepat
+              </span>
+            </div>
             
-            <p className="text-gray-300 text-base sm:text-lg mb-10 max-w-xl leading-relaxed">
-              Distributor material handling dengan layanan lengkap, cepat, dan profesional.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20material%20handling%20perusahaan%20saya." target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group">
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="currentColor" fillRule="evenodd" d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" clipRule="evenodd"/>
-                  <path fill="currentColor" d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z"/>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link
+                href="/contact?subject=penawaran"
+                className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Hubungi via WhatsApp
-              </a>
+                <span>Minta Penawaran</span>
+              </Link>
               
-              <button onClick={() => triggerSelectProduct("")} className="flex items-center justify-center border-2 border-brand-blue/40 hover:border-brand-blue hover:bg-brand-blue text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150">
-                Minta Penawaran
-              </button>
-              
-              <Link href="/products" className="flex items-center justify-center text-white/80 hover:text-white font-semibold px-4 py-4 transition-colors">
-                Lihat Produk <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
+              <Link
+                href="/products"
+                className="flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>Lihat Produk</span>
               </Link>
             </div>
           </div>
 
-          {/* Sales Executive Card */}
-          <div className="mt-12 lg:self-end lg:mt-0 glassmorphic rounded-2xl p-5 flex items-center gap-4 max-w-sm shadow-2xl border border-white/10 animate-bounce-slow">
-            <div className="w-14 h-14 rounded-full bg-brand-blue/20 border-2 border-brand-blueLight/60 flex items-center justify-center text-brand-blueLight">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          {/* Floating Sales Consultant Card */}
+          <div className="mt-12 lg:self-end lg:mt-0 bg-[#0E1F30] border border-white/5 rounded-2xl p-5 flex flex-col gap-4 max-w-xs shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center gap-3.5">
+              <div className="relative shrink-0">
+                <div className="w-12 h-12 rounded-full bg-brand-blue/20 border-2 border-brand-blueLight/60 overflow-hidden flex items-center justify-center">
+                  <span className="text-white font-display font-extrabold text-base">AR</span>
+                </div>
+                {/* Active Status Dot */}
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0E1F30] rounded-full animate-pulse"></span>
+              </div>
+              <div>
+                <h4 className="text-white font-bold text-sm tracking-wide leading-tight">Agung Ramdhani</h4>
+                <p className="text-gray-400 text-[10px] sm:text-xs">Sales Consultant</p>
+                <span className="text-[9px] text-green-400 font-semibold flex items-center gap-1 mt-0.5">
+                  Online sekarang
+                </span>
+              </div>
             </div>
-            <div>
-              <h4 className="text-white font-semibold text-base">Agung Ramdhani</h4>
-              <p className="text-gray-400 text-xs">Sales Executive</p>
-              <div className="h-[1px] bg-white/10 my-1.5"></div>
-              <p className="text-brand-blueLight font-bold text-[10px] uppercase tracking-wider">PT Denko Wahana Sakti</p>
-            </div>
+            
+            {/* CTA Chat Whatsapp button */}
+            <a 
+              href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-[#25D366] hover:bg-[#20ba56] text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" /><path d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z" /></svg>
+              <span>Chat WhatsApp</span>
+            </a>
           </div>
         </div>
       </section>
