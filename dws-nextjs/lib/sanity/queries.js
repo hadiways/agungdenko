@@ -157,3 +157,59 @@ export const ALL_TAGS_QUERY = `
     "slug": slug.current
   }
 `;
+
+export const PRODUCTS_QUERY = `
+  *[_type == "product"] | order(name asc) {
+    _id,
+    "id": _id,
+    name,
+    "image": image.asset->url,
+    category,
+    description,
+    specs
+  }
+`;
+
+export const SERVICES_QUERY = `
+  *[_type == "service"] | order(title asc) {
+    _id,
+    title,
+    icon
+  }
+`;
+
+export const TESTIMONIALS_QUERY = `
+  *[_type == "testimonial"] | order(company asc) {
+    _id,
+    company,
+    rating,
+    comment
+  }
+`;
+
+export const PARTNERS_QUERY = `
+  *[_type == "partner"] | order(name asc) {
+    _id,
+    name,
+    "logo": logo.asset->url,
+    websiteUrl
+  }
+`;
+
+export const FEATURES_QUERY = `
+  *[_type == "feature"] | order(title asc) {
+    _id,
+    title,
+    icon,
+    description
+  }
+`;
+
+export const GALLERY_QUERY = `
+  *[_type == "gallery"] | order(title asc) {
+    _id,
+    title,
+    "image": image.asset->url
+  }
+`;
+

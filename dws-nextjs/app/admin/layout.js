@@ -90,7 +90,7 @@ export default function AdminLayout({ children }) {
                     required
                     value={credentials.email}
                     onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                    placeholder="agung"
+                    placeholder="Username / Email"
                     className="w-full bg-white/5 border border-white/10 focus:border-brand-blue rounded-xl pl-10 pr-4 py-3.5 text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-blue transition-all"
                   />
                 </div>

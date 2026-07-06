@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PRODUCTS_DATA } from "@/data/products";
+import { sanityFetch } from "@/lib/sanity/fetch";
+import { PRODUCTS_QUERY } from "@/lib/sanity/queries";
 import { UploadCloud, Trash2 } from "lucide-react";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState(PRODUCTS_DATA);
+  const [products, setProducts] = useState([]);
   const [customProducts, setCustomProducts] = useState([]);
   const [form, setForm] = useState({
     name: "",
@@ -14,18 +15,31 @@ export default function AdminProductsPage() {
     image: "",
   });
 
-  // Load custom products from localStorage on mount
+  // Load custom products from localStorage and default products from Sanity CMS on mount
   useEffect(() => {
-    const saved = localStorage.getItem("custom_products");
-    if (saved) {
+    async function loadAllProducts() {
       try {
-        const custom = JSON.parse(saved);
-        setCustomProducts(custom);
-        setProducts([...custom, ...PRODUCTS_DATA]);
-      } catch (e) {
-        console.error("Failed to parse custom products", e);
+        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
+        const baseProducts = cmsProducts || [];
+
+        const saved = localStorage.getItem("custom_products");
+        if (saved) {
+          try {
+            const custom = JSON.parse(saved);
+            setCustomProducts(custom);
+            setProducts([...custom, ...baseProducts]);
+          } catch (e) {
+            console.error("Failed to parse custom products", e);
+            setProducts(baseProducts);
+          }
+        } else {
+          setProducts(baseProducts);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products for admin", err);
       }
     }
+    loadAllProducts();
   }, []);
 
   const handleChange = (e) => {
@@ -62,7 +76,8 @@ export default function AdminProductsPage() {
 
     const updatedCustom = [newProduct, ...customProducts];
     setCustomProducts(updatedCustom);
-    setProducts([...updatedCustom, ...PRODUCTS_DATA]);
+    const defaultProducts = products.filter(p => !p.isCustom);
+    setProducts([...updatedCustom, ...defaultProducts]);
     localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
 
     setForm({ name: "", category: "", description: "", image: "" });
@@ -81,7 +96,8 @@ export default function AdminProductsPage() {
     if (confirm("Apakah Anda yakin ingin menghapus produk kustom ini?")) {
       const updatedCustom = customProducts.filter((p) => p.id !== id);
       setCustomProducts(updatedCustom);
-      setProducts([...updatedCustom, ...PRODUCTS_DATA]);
+      const defaultProducts = products.filter((p) => !p.isCustom);
+      setProducts([...updatedCustom, ...defaultProducts]);
       localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
       alert("Produk berhasil dihapus!");
     }

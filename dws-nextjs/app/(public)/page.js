@@ -2,11 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FEATURES_DATA } from "@/data/features";
-import { PRODUCTS_DATA } from "@/data/products";
-import { SERVICES_DATA } from "@/data/services";
-import { TESTIMONIALS_DATA } from "@/data/testimonials";
-import { PARTNERS_DATA } from "@/data/partners";
+import { sanityFetch } from "@/lib/sanity/fetch";
+import { 
+  PRODUCTS_QUERY, 
+  SERVICES_QUERY, 
+  TESTIMONIALS_QUERY, 
+  PARTNERS_QUERY,
+  FEATURES_QUERY,
+  GALLERY_QUERY
+} from "@/lib/sanity/queries";
 import HeroIndustryRotator from "@/components/HeroIndustryRotator";
 import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare } from "lucide-react";
 
@@ -20,7 +24,12 @@ export default function Home() {
     status: "Online sekarang",
     avatar: ""
   });
-  const [products, setProducts] = useState(PRODUCTS_DATA);
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [partners, setPartners] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -50,16 +59,42 @@ export default function Home() {
       }
     }
 
-    // Load dynamic products
-    const savedProducts = localStorage.getItem("custom_products");
-    if (savedProducts) {
+    // Load dynamic CMS and local custom data
+    async function fetchCMSData() {
       try {
-        const custom = JSON.parse(savedProducts);
-        setProducts([...custom, ...PRODUCTS_DATA]);
-      } catch (e) {
-        console.error("Failed to load custom products", e);
+        const [cmsProducts, cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery] = await Promise.all([
+          sanityFetch(PRODUCTS_QUERY),
+          sanityFetch(SERVICES_QUERY),
+          sanityFetch(TESTIMONIALS_QUERY),
+          sanityFetch(PARTNERS_QUERY),
+          sanityFetch(FEATURES_QUERY),
+          sanityFetch(GALLERY_QUERY)
+        ]);
+
+        const baseProducts = cmsProducts || [];
+        setServices(cmsServices || []);
+        setTestimonials(cmsTestimonials || []);
+        setPartners(cmsPartners || []);
+        setFeatures(cmsFeatures || []);
+        setGalleryItems(cmsGallery || []);
+
+        const savedProducts = localStorage.getItem("custom_products");
+        if (savedProducts) {
+          try {
+            const custom = JSON.parse(savedProducts);
+            setProducts([...custom, ...baseProducts]);
+          } catch (e) {
+            console.error("Failed to load custom products", e);
+            setProducts(baseProducts);
+          }
+        } else {
+          setProducts(baseProducts);
+        }
+      } catch (err) {
+        console.error("Failed to fetch CMS content", err);
       }
     }
+    fetchCMSData();
 
     return () => observer.disconnect();
   }, []);
@@ -105,15 +140,6 @@ export default function Home() {
   const triggerSelectProduct = (productId) => {
     window.dispatchEvent(new CustomEvent("select-product", { detail: productId }));
   };
-
-  const galleryItems = [
-    { title: "Forklift Warehouse", image: "/images/gallery/gallery-1.jpg" },
-    { title: "Scissor Lift", image: "/images/gallery/gallery-2.jpg" },
-    { title: "Maintenance", image: "/images/gallery/gallery-3.jpg" },
-    { title: "Delivery Truck", image: "/images/gallery/gallery-4.jpg" },
-    { title: "Service Technician", image: "/images/gallery/gallery-5.jpg" },
-    { title: "Team Photo", image: "/images/gallery/gallery-6.jpg" },
-  ];
 
   return (
     <>
@@ -226,15 +252,25 @@ export default function Home() {
       <section className="relative z-20 px-6 md:px-12 -mt-10 md:-mt-16">
         <div className="container mx-auto">
           <div id="benefit-bar" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 bg-white rounded-2xl p-6 md:p-8 shadow-2xl border border-blue-100">
-            {FEATURES_DATA.map((b, idx) => (
-              <div key={idx} className="benefit-card flex flex-col items-center text-center p-3 group hover:scale-105 transition-all duration-300">
-                <div className="w-12 h-12 rounded-full bg-brand-lightBg flex items-center justify-center mb-4 group-hover:bg-brand-blue transition-colors duration-300 shadow-sm shadow-brand-blue/5">
-                  <div dangerouslySetInnerHTML={{ __html: b.icon }} />
+            {features && features.length > 0 ? (
+              features.map((b, idx) => (
+                <div key={b._id || idx} className="benefit-card flex flex-col items-center text-center p-3 group hover:scale-105 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-full bg-brand-lightBg flex items-center justify-center mb-4 group-hover:bg-brand-blue transition-colors duration-300 shadow-sm shadow-brand-blue/5">
+                    {b.icon && b.icon.startsWith("<svg") ? (
+                      <div dangerouslySetInnerHTML={{ __html: b.icon }} />
+                    ) : (
+                      <span className="text-brand-blue font-bold text-xs">★</span>
+                    )}
+                  </div>
+                  <h4 className="text-brand-darkBg font-semibold text-xs leading-snug group-hover:text-brand-blue transition-colors duration-200">{b.title}</h4>
+                  <p className="text-gray-500 text-[10px] mt-1.5 leading-normal hidden lg:block">{b.description}</p>
                 </div>
-                <h4 className="text-brand-darkBg font-semibold text-xs leading-snug group-hover:text-brand-blue transition-colors duration-200">{b.title}</h4>
-                <p className="text-gray-500 text-[10px] mt-1.5 leading-normal hidden lg:block">{b.description}</p>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-6 text-xs font-semibold">
+                No features available.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -256,23 +292,29 @@ export default function Home() {
           </div>
 
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((p) => (
-              <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
-                <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
-                  <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                  <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
-                    {p.category}
+            {products && products.length > 0 ? (
+              products.map((p) => (
+                <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
+                  <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
+                    <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
+                      {p.category}
+                    </div>
                   </div>
+                  <div>
+                    <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
+                    <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
+                  </div>
+                  <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
+                    Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
-                  <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
-                </div>
-                <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
-                  Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
-                </button>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                Tidak ada produk yang tersedia.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -312,14 +354,24 @@ export default function Home() {
                 Kami berkomitmen memberikan pelayanan menyeluruh dan dukungan purna jual terbaik demi menunjang produktivitas operasional bisnis Anda.
               </p>
               <div id="services-list" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {SERVICES_DATA.map((s, idx) => (
-                  <div key={idx} className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/5 hover:border-brand-blueLight/20 hover:bg-white/10 transition-all duration-300 group">
-                    <div className="w-10 h-10 rounded-xl bg-brand-blue/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue transition-colors">
-                      <span className="group-hover:text-white transition-colors duration-200" dangerouslySetInnerHTML={{ __html: s.icon }} />
+                {services && services.length > 0 ? (
+                  services.map((s, idx) => (
+                    <div key={s._id || idx} className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/5 hover:border-brand-blueLight/20 hover:bg-white/10 transition-all duration-300 group">
+                      <div className="w-10 h-10 rounded-xl bg-brand-blue/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue transition-colors">
+                        {s.icon && s.icon.startsWith("<svg") ? (
+                          <span className="group-hover:text-white transition-colors duration-200" dangerouslySetInnerHTML={{ __html: s.icon }} />
+                        ) : (
+                          <span className="text-white text-xs font-bold">🛠</span>
+                        )}
+                      </div>
+                      <span className="text-gray-200 group-hover:text-white font-medium text-xs sm:text-sm transition-colors">{s.title}</span>
                     </div>
-                    <span className="text-gray-200 group-hover:text-white font-medium text-xs sm:text-sm transition-colors">{s.title}</span>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center text-gray-500 py-6 text-xs">
+                    No services available.
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="mt-12 bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
@@ -392,38 +444,46 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div
-                ref={scrollRef}
-                onScroll={handleScroll}
-                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6"
-              >
-                {TESTIMONIALS_DATA.map((t, idx) => (
-                  <div key={idx} className="w-full md:w-[calc(33.333%-16px)] flex-shrink-0 snap-center bg-white border border-blue-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-[180px]">
-                    <div>
-                      <div className="flex gap-1 text-brand-accent mb-4">
-                        {Array(t.rating).fill(0).map((_, i) => (
-                          <svg key={i} className="w-4 h-4 fill-current text-brand-accent" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                        ))}
+              {testimonials && testimonials.length > 0 ? (
+                <div
+                  ref={scrollRef}
+                  onScroll={handleScroll}
+                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6"
+                >
+                  {testimonials.map((t, idx) => (
+                    <div key={t._id || idx} className="w-full md:w-[calc(33.333%-16px)] flex-shrink-0 snap-center bg-white border border-blue-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-[180px]">
+                      <div>
+                        <div className="flex gap-1 text-brand-accent mb-4">
+                          {Array(t.rating || 5).fill(0).map((_, i) => (
+                            <svg key={i} className="w-4 h-4 fill-current text-brand-accent" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                          ))}
+                        </div>
+                        <p className="text-gray-600 text-xs sm:text-sm italic mb-6 leading-relaxed">"{t.comment}"</p>
                       </div>
-                      <p className="text-gray-600 text-xs sm:text-sm italic mb-6 leading-relaxed">"{t.comment}"</p>
+                      <div className="border-t border-gray-100 pt-4">
+                        <h4 className="text-brand-darkBg font-bold text-sm leading-tight">{t.company}</h4>
+                        <p className="text-gray-400 text-[10px] mt-0.5">Verified Client</p>
+                      </div>
                     </div>
-                    <div className="border-t border-gray-100 pt-4">
-                      <h4 className="text-brand-darkBg font-bold text-sm leading-tight">{t.company}</h4>
-                      <p className="text-gray-400 text-[10px] mt-0.5">Verified Client</p>
-                    </div>
-                  </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-12 text-xs">
+                  No testimonials yet.
+                </div>
+              )}
+            </div>
+            {testimonials && testimonials.length > 0 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {testimonials.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => scrollToIdx(idx)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-brand-blue w-5' : 'bg-gray-300'}`}
+                  ></button>
                 ))}
               </div>
-            </div>
-            <div className="flex justify-center gap-2 mt-4">
-              {TESTIMONIALS_DATA.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => scrollToIdx(idx)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-brand-blue w-5' : 'bg-gray-300'}`}
-                ></button>
-              ))}
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -441,14 +501,20 @@ export default function Home() {
             </Link>
           </div>
           <div id="gallery-grid" className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {galleryItems.map((g, idx) => (
-              <div key={idx} className="relative overflow-hidden rounded-2xl group aspect-[4/3] bg-brand-darkBg cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300">
-                <img src={g.image} alt={g.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out filter brightness-95 group-hover:brightness-100" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-darkBg/90 via-brand-darkBg/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                  <span className="text-white font-semibold text-xs sm:text-sm">{g.title}</span>
+            {galleryItems && galleryItems.length > 0 ? (
+              galleryItems.map((g, idx) => (
+                <div key={g._id || idx} className="relative overflow-hidden rounded-2xl group aspect-[4/3] bg-brand-darkBg cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300">
+                  <img src={g.image} alt={g.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out filter brightness-95 group-hover:brightness-100" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-darkBg/90 via-brand-darkBg/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <span className="text-white font-semibold text-xs sm:text-sm">{g.title}</span>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                Tidak ada foto galeri kegiatan yang tersedia.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -458,11 +524,21 @@ export default function Home() {
         <div className="container mx-auto">
           <span className="text-gray-400 font-bold text-xs uppercase tracking-widest text-center block mb-8">PARTNER RESMI & DISTRIBUSI KAMI</span>
           <div id="partners-list" className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-            {PARTNERS_DATA.map((p, idx) => (
-              <div key={idx} className="flex items-center justify-center px-4 py-3 bg-brand-lightBg/50 border border-brand-blueLight/10 rounded-xl hover:border-brand-blueLight/30 hover:bg-white hover:shadow-md transition-all duration-300 group cursor-default">
-                <span className="text-gray-400 font-display font-extrabold text-xs sm:text-sm tracking-widest group-hover:text-brand-blue transition-colors uppercase italic">{p.name}</span>
+            {partners && partners.length > 0 ? (
+              partners.map((p, idx) => (
+                <div key={p._id || idx} className="flex items-center justify-center px-4 py-3 bg-brand-lightBg/50 border border-brand-blueLight/10 rounded-xl hover:border-brand-blueLight/30 hover:bg-white hover:shadow-md transition-all duration-300 group cursor-default">
+                  {p.logo ? (
+                    <img src={p.logo} alt={p.name} className="h-6 object-contain group-hover:scale-105 transition-transform" />
+                  ) : (
+                    <span className="text-gray-400 font-display font-extrabold text-xs sm:text-sm tracking-widest group-hover:text-brand-blue transition-colors uppercase italic">{p.name}</span>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-6 text-xs">
+                No partner logos available.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>

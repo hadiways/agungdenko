@@ -1,21 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PRODUCTS_DATA } from "@/data/products";
+import { sanityFetch } from "@/lib/sanity/fetch";
+import { PRODUCTS_QUERY } from "@/lib/sanity/queries";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(PRODUCTS_DATA);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("custom_products");
-    if (saved) {
+    async function loadProducts() {
       try {
-        const custom = JSON.parse(saved);
-        setProducts([...custom, ...PRODUCTS_DATA]);
-      } catch (e) {
-        console.error("Failed to load custom products", e);
+        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
+        const baseProducts = cmsProducts || [];
+
+        const saved = localStorage.getItem("custom_products");
+        if (saved) {
+          try {
+            const custom = JSON.parse(saved);
+            setProducts([...custom, ...baseProducts]);
+          } catch (e) {
+            console.error("Failed to load custom products", e);
+            setProducts(baseProducts);
+          }
+        } else {
+          setProducts(baseProducts);
+        }
+      } catch (err) {
+        console.error("Failed to load products from CMS", err);
       }
     }
+    loadProducts();
   }, []);
 
   const triggerSelectProduct = (productName) => {
@@ -37,23 +51,29 @@ export default function ProductsPage() {
       <section className="py-24 px-6 md:px-12 bg-white">
         <div className="container mx-auto">
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((p) => (
-              <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
-                <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
-                  <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                  <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
-                    {p.category}
+            {products && products.length > 0 ? (
+              products.map((p) => (
+                <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
+                  <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
+                    <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
+                      {p.category}
+                    </div>
                   </div>
+                  <div>
+                    <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
+                    <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
+                  </div>
+                  <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
+                    Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
-                  <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
-                </div>
-                <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
-                  Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
-                </button>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                Tidak ada produk yang tersedia.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>

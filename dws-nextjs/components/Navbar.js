@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { sanityFetch } from "@/lib/sanity/fetch";
 import { 
   ChevronDown, 
   Phone, 
@@ -62,6 +63,47 @@ export default function Navbar() {
         console.error("Failed to load navbar sales profile", e);
       }
     }
+  }, []);
+
+  const [contentAvailability, setContentAvailability] = useState({
+    hasArticles: false,
+    hasGallery: false,
+    hasDownloads: false,
+    hasCaseStudies: false,
+    hasCareers: false,
+    hasNews: false,
+    hasFaq: false
+  });
+
+  useEffect(() => {
+    async function checkAvailability() {
+      try {
+        const query = `{
+          "hasArticles": count(*[_type == "article" && status == "published"]) > 0,
+          "hasGallery": count(*[_type == "gallery"]) > 0,
+          "hasDownloads": count(*[_type == "download"]) > 0,
+          "hasCaseStudies": count(*[_type == "caseStudy" || _type == "case-study"]) > 0,
+          "hasCareers": count(*[_type == "career" || _type == "job" || _type == "lowongan"]) > 0,
+          "hasNews": count(*[_type == "news" || _type == "article" && category->slug.current == "berita"]) > 0,
+          "hasFaq": count(*[_type == "faq"]) > 0
+        }`;
+        const data = await sanityFetch(query);
+        if (data) {
+          setContentAvailability({
+            hasArticles: !!data.hasArticles,
+            hasGallery: !!data.hasGallery,
+            hasDownloads: !!data.hasDownloads,
+            hasCaseStudies: !!data.hasCaseStudies,
+            hasCareers: !!data.hasCareers,
+            hasNews: !!data.hasNews,
+            hasFaq: !!data.hasFaq
+          });
+        }
+      } catch (err) {
+        console.error("Failed to check content availability", err);
+      }
+    }
+    checkAvailability();
   }, []);
 
   // Handle sticky navbar on scroll
@@ -139,24 +181,24 @@ export default function Navbar() {
   ];
 
   const resourcesLinks = [
-    { name: "Articles (Artikel)", href: "/artikel", icon: <FileText className="w-4 h-4" /> },
-    { name: "Product Catalog", href: "/resources/catalog", icon: <BookOpen className="w-4 h-4" /> },
-    { name: "Brochures", href: "/resources/brochures", icon: <FileCheck2 className="w-4 h-4" /> },
-    { name: "FAQ", href: "/resources/faq", icon: <HelpCircle className="w-4 h-4" /> },
-    { name: "Case Studies", href: "/resources/case-studies", icon: <Info className="w-4 h-4" /> },
-    { name: "News (Berita)", href: "/resources/news", icon: <Newspaper className="w-4 h-4" /> },
-    { name: "Videos", href: "/resources/videos", icon: <Video className="w-4 h-4" /> },
-    { name: "Downloads", href: "/resources/downloads", icon: <Download className="w-4 h-4" /> },
-  ];
+    { name: "Articles (Artikel)", href: "/artikel", icon: <FileText className="w-4 h-4" />, show: contentAvailability.hasArticles },
+    { name: "Product Catalog", href: "/resources/catalog", icon: <BookOpen className="w-4 h-4" />, show: true },
+    { name: "Brochures", href: "/resources/brochures", icon: <FileCheck2 className="w-4 h-4" />, show: true },
+    { name: "FAQ", href: "/resources/faq", icon: <HelpCircle className="w-4 h-4" />, show: contentAvailability.hasFaq },
+    { name: "Case Studies", href: "/resources/case-studies", icon: <Info className="w-4 h-4" />, show: contentAvailability.hasCaseStudies },
+    { name: "News (Berita)", href: "/resources/news", icon: <Newspaper className="w-4 h-4" />, show: contentAvailability.hasNews },
+    { name: "Videos", href: "/resources/videos", icon: <Video className="w-4 h-4" />, show: true },
+    { name: "Downloads", href: "/resources/downloads", icon: <Download className="w-4 h-4" />, show: contentAvailability.hasDownloads },
+  ].filter(link => link.show);
 
   const companyLinks = [
-    { name: "About Us (Tentang Kami)", href: "/about", icon: <Info className="w-4 h-4" /> },
-    { name: "Our Brands", href: "/about#brands", icon: <Award className="w-4 h-4" /> },
-    { name: "Gallery", href: "/gallery", icon: <ImageIcon className="w-4 h-4" /> },
-    { name: "Testimonials", href: "/testimonials", icon: <MessageSquare className="w-4 h-4" /> },
-    { name: "Careers (Karir)", href: "/about#careers", icon: <Briefcase className="w-4 h-4" /> },
-    { name: "Contact (Kontak)", href: "/contact", icon: <Phone className="w-4 h-4" /> },
-  ];
+    { name: "About Us (Tentang Kami)", href: "/about", icon: <Info className="w-4 h-4" />, show: true },
+    { name: "Our Brands", href: "/about#brands", icon: <Award className="w-4 h-4" />, show: true },
+    { name: "Gallery", href: "/gallery", icon: <ImageIcon className="w-4 h-4" />, show: contentAvailability.hasGallery },
+    { name: "Testimonials", href: "/testimonials", icon: <MessageSquare className="w-4 h-4" />, show: true },
+    { name: "Careers (Karir)", href: "/about#careers", icon: <Briefcase className="w-4 h-4" />, show: contentAvailability.hasCareers },
+    { name: "Contact (Kontak)", href: "/contact", icon: <Phone className="w-4 h-4" />, show: true },
+  ].filter(link => link.show);
 
   const shouldUseDarkText = false; // Always use light text on solid dark blue header
 

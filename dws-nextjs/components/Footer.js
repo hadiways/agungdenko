@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { sanityFetch } from "@/lib/sanity/fetch";
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -36,6 +37,32 @@ export default function Footer() {
         console.error("Failed to load footer sales profile", e);
       }
     }
+  }, []);
+
+  const [contentAvailability, setContentAvailability] = useState({
+    hasArticles: false,
+    hasGallery: false
+  });
+
+  useEffect(() => {
+    async function checkAvailability() {
+      try {
+        const query = `{
+          "hasArticles": count(*[_type == "article" && status == "published"]) > 0,
+          "hasGallery": count(*[_type == "gallery"]) > 0
+        }`;
+        const data = await sanityFetch(query);
+        if (data) {
+          setContentAvailability({
+            hasArticles: !!data.hasArticles,
+            hasGallery: !!data.hasGallery
+          });
+        }
+      } catch (err) {
+        console.error("Failed to check footer content availability", err);
+      }
+    }
+    checkAvailability();
   }, []);
 
   useEffect(() => {
@@ -221,9 +248,13 @@ Berikut detail kebutuhan saya:
           <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Perusahaan</h4>
           <ul className="space-y-2">
             <li><a href="/about" className="hover:text-brand-blueLight transition-colors">About Us</a></li>
-            <li><a href="/gallery" className="hover:text-brand-blueLight transition-colors">Gallery</a></li>
+            {contentAvailability.hasGallery && (
+              <li><a href="/gallery" className="hover:text-brand-blueLight transition-colors">Gallery</a></li>
+            )}
             <li><a href="/testimonials" className="hover:text-brand-blueLight transition-colors">Testimonials</a></li>
-            <li><a href="/artikel" className="hover:text-brand-blueLight transition-colors">Artikel & News</a></li>
+            {contentAvailability.hasArticles && (
+              <li><a href="/artikel" className="hover:text-brand-blueLight transition-colors">Artikel & News</a></li>
+            )}
           </ul>
         </div>
       </div>
