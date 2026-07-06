@@ -151,7 +151,7 @@ export default function Navbar() {
         <div className="flex items-center justify-center bg-brand-blue text-white font-display font-extrabold text-lg sm:text-xl px-3 py-1 rounded-md skew-x-12 transform transition-transform group-hover:scale-105 duration-300 shadow-md">
           <span className="-skew-x-12">DWS</span>
         </div>
-        <div className="flex flex-col hidden 2xl:flex">
+        <div className="flex flex-col hidden sm:flex">
           <span className={`font-display font-bold text-xs tracking-wide leading-none transition-colors ${
             shouldUseDarkText ? "text-brand-darkBg group-hover:text-brand-blue" : "text-white group-hover:text-brand-blueLight"
           }`}>
