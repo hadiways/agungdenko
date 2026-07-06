@@ -155,12 +155,32 @@ fi
 # Konfigurasi Caddy
 echo ""
 echo "⚙️  Konfigurasi Caddy..."
-mkdir -p /var/log/caddy /etc/caddy
-chown caddy:caddy /var/log/caddy 2>/dev/null || true
+# Pastikan direktori log Caddy ada dan diatur hak aksesnya secara rekursif
+mkdir -p /var/log/caddy /etc/caddy /var/lib/caddy
+chown -R caddy:caddy /var/log/caddy /etc/caddy /var/lib/caddy 2>/dev/null || true
+
+# Hentikan service nginx atau httpd jika aktif agar port 80 & 443 bebas
+echo "🛑 Memeriksa bentrokan port web server lain..."
+systemctl stop nginx 2>/dev/null || true
+systemctl disable nginx 2>/dev/null || true
+systemctl stop httpd 2>/dev/null || true
+systemctl disable httpd 2>/dev/null || true
+
+# Berikan capability bind port < 1024 untuk binary caddy jika dipasang manual
+if command -v setcap &>/dev/null; then
+    echo "🔒 Mengatur capability port untuk binary Caddy..."
+    setcap 'cap_net_bind_service=+ep' /usr/local/bin/caddy 2>/dev/null || true
+fi
+
 cp /opt/dws-portal/Caddyfile /etc/caddy/Caddyfile
+chown caddy:caddy /etc/caddy/Caddyfile 2>/dev/null || true
+
+# Validasi Caddyfile
 caddy validate --config /etc/caddy/Caddyfile
-systemctl start caddy
-systemctl reload caddy
+
+# Mulai Caddy
+echo "🔄 Memulai Caddy..."
+systemctl restart caddy || systemctl start caddy
 
 # Konfigurasi Supervisor
 echo "👷 Konfigurasi Supervisor..."

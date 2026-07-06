@@ -165,13 +165,27 @@ chmod -R 775 $BACKEND_DIR/bootstrap/cache
 echo ""
 echo "🌐 Deploy Frontend (Static HTML + Caddy)..."
 
-# Pastikan direktori log Caddy ada
-mkdir -p /var/log/caddy /etc/caddy
-chown caddy:caddy /var/log/caddy 2>/dev/null || true
+# Pastikan direktori log Caddy ada dan diatur hak aksesnya secara rekursif
+mkdir -p /var/log/caddy /etc/caddy /var/lib/caddy
+chown -R caddy:caddy /var/log/caddy /etc/caddy /var/lib/caddy 2>/dev/null || true
+
+# Hentikan service nginx atau httpd jika aktif agar port 80 & 443 bebas
+echo "🛑 Memeriksa bentrokan port web server lain..."
+systemctl stop nginx 2>/dev/null || true
+systemctl disable nginx 2>/dev/null || true
+systemctl stop httpd 2>/dev/null || true
+systemctl disable httpd 2>/dev/null || true
+
+# Berikan capability bind port < 1024 untuk binary caddy jika dipasang manual
+if command -v setcap &>/dev/null; then
+    echo "🔒 Mengatur capability port untuk binary Caddy..."
+    setcap 'cap_net_bind_service=+ep' /usr/local/bin/caddy 2>/dev/null || true
+fi
 
 # Copy Caddyfile dari repo ke sistem
 echo "📋 Update Caddyfile..."
 cp $PROJECT_DIR/Caddyfile /etc/caddy/Caddyfile
+chown caddy:caddy /etc/caddy/Caddyfile 2>/dev/null || true
 
 # Copy supervisor configs
 echo "👷 Update Supervisor configs..."
@@ -187,9 +201,15 @@ supervisorctl reread 2>/dev/null && supervisorctl update 2>/dev/null || true
 echo "✅ Validasi Caddyfile..."
 caddy validate --config /etc/caddy/Caddyfile
 
-# Reload Caddy tanpa downtime
-echo "🔄 Reload Caddy..."
-systemctl reload caddy || systemctl restart caddy
+# Reload atau Restart Caddy
+echo "🔄 Reload / Restart Caddy..."
+if systemctl is-active --quiet caddy; then
+    echo "   -> Caddy aktif, melakukan reload..."
+    systemctl reload caddy || systemctl restart caddy
+else
+    echo "   -> Caddy tidak aktif, memulai ulang..."
+    systemctl restart caddy || systemctl start caddy
+fi
 
 echo ""
 echo "✅ Deployment selesai!"
