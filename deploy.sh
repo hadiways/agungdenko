@@ -65,9 +65,17 @@ mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
 
 # Konfigurasi hak akses database
 if [ "$DB_USER" = "root" ]; then
-    echo "🔑 Mengatur hak akses untuk user root via TCP..."
-    mysql -e "CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    echo "🔑 Mengatur hak akses untuk user root..."
+    # Izinkan root dengan password OR unix_socket di localhost
+    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASS}' OR unix_socket;" 2>/dev/null || \
+    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+    
+    # Izinkan root dengan password OR unix_socket di 127.0.0.1
+    mysql -e "CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';" 2>/dev/null || true
+    mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}' OR unix_socket;" 2>/dev/null || \
     mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    
+    mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;"
     mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;"
 else
     echo "🔑 Mengatur hak akses untuk user ${DB_USER}..."
