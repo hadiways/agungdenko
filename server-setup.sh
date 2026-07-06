@@ -202,14 +202,22 @@ DB_PASS=$(grep -E "^DB_PASSWORD=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'" 
 echo "📋 Database name: $DB_NAME"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
 
-# Jika user bukan root, buat user tersebut jika belum ada
-if [ "$DB_USER" != "root" ] && [ -n "$DB_USER" ]; then
+# Konfigurasi hak akses database
+if [ "$DB_USER" = "root" ]; then
+    echo "🔑 Mengatur hak akses untuk user root via TCP..."
+    mysql -e "CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;"
+else
+    echo "🔑 Mengatur hak akses untuk user ${DB_USER}..."
     mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "ALTER USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
     mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';"
     mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
+    mysql -e "ALTER USER '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';"
     mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'127.0.0.1';"
-    mysql -e "FLUSH PRIVILEGES;"
 fi
+mysql -e "FLUSH PRIVILEGES;"
 
 php artisan migrate --force
 php artisan storage:link --force
