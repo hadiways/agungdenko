@@ -26,78 +26,67 @@ jobs:
 
             echo "🚀 Memulai proses deploy..."
 
-            # ── Deteksi package manager ──────────────────────────
-            if command -v dnf &>/dev/null; then
-              PKG="dnf"
-            elif command -v yum &>/dev/null; then
-              PKG="yum"
-            else
-              PKG="apt-get"
-              apt-get update -y
-            fi
+            # ── Deteksi OS Version untuk Remi ───────────────────
+            OS_VER=$(cat /etc/os-release | grep "^VERSION_ID" | cut -d'"' -f2 | cut -d'.' -f1)
+            echo "📋 OS Version: $OS_VER"
 
             # ── Install Git ──────────────────────────────────────
             if ! command -v git &>/dev/null; then
               echo "📦 Install git..."
-              $PKG install -y git
+              yum install -y git
             fi
 
-            # ── Install PHP 8.3 ──────────────────────────────────
-            if ! command -v php &>/dev/null; then
-              echo "🐘 Install PHP 8.3..."
-              if [ "$PKG" = "apt-get" ]; then
-                add-apt-repository ppa:ondrej/php -y
-                apt-get update -y
-                apt-get install -y php8.3 php8.3-fpm php8.3-cli php8.3-common \
-                  php8.3-mysql php8.3-mbstring php8.3-xml php8.3-curl \
-                  php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl php8.3-tokenizer
-              else
-                $PKG install -y epel-release || true
-                $PKG install -y https://rpms.remirepo.net/enterprise/remi-release-8.rpm 2>/dev/null || \
-                $PKG install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm 2>/dev/null || true
-                if command -v dnf &>/dev/null; then
-                  dnf module reset php -y || true
-                  dnf module enable php:remi-8.3 -y || true
-                fi
-                $PKG install -y php php-fpm php-cli php-common \
-                  php-mysqlnd php-mbstring php-xml php-curl \
-                  php-zip php-bcmath php-gd php-intl php-opcache
-              fi
-              systemctl enable php-fpm 2>/dev/null || systemctl enable php8.3-fpm 2>/dev/null || true
-              systemctl start php-fpm 2>/dev/null || systemctl start php8.3-fpm 2>/dev/null || true
+            # ── Install/Upgrade PHP 8.3 ──────────────────────────
+            PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "0.0")
+            echo "🐘 PHP versi saat ini: $PHP_VER"
+
+            if [[ "$PHP_VER" != "8.2" && "$PHP_VER" != "8.3" && "$PHP_VER" != "8.4" ]]; then
+              echo "⚙️ Install PHP 8.3 dari Remi..."
+
+              # Install EPEL + Remi repo
+              dnf install -y epel-release 2>/dev/null || yum install -y epel-release
+              dnf install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || \
+              yum install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm"
+
+              # Reset module PHP lama, aktifkan PHP 8.3 dari Remi
+              dnf module reset php -y || true
+              dnf module enable php:remi-8.3 -y
+
+              # Hapus PHP lama jika ada
+              dnf remove -y php php-* 2>/dev/null || true
+
+              # Install PHP 8.3 + ekstensi Laravel
+              dnf install -y \
+                php php-fpm php-cli php-common \
+                php-mysqlnd php-pdo php-mbstring \
+                php-xml php-curl php-zip \
+                php-bcmath php-gd php-intl \
+                php-opcache php-process php-tokenizer
+
+              systemctl enable php-fpm && systemctl start php-fpm
               echo "✅ PHP $(php -v | head -1)"
+            else
+              echo "✅ PHP $PHP_VER sudah memenuhi syarat"
             fi
 
             # ── Install Composer ─────────────────────────────────
             if ! command -v composer &>/dev/null; then
               echo "🎼 Install Composer..."
               curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-              echo "✅ $(composer --version)"
             fi
+            echo "✅ $(composer --version)"
 
             # ── Install Caddy ────────────────────────────────────
             if ! command -v caddy &>/dev/null; then
-              echo "🌐 Install Caddy..."
-              if [ "$PKG" = "apt-get" ]; then
-                curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-                  | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-                curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
-                  | tee /etc/apt/sources.list.d/caddy-stable.list
-                apt-get update -y && apt-get install -y caddy
-              else
-                $PKG install -y 'dnf-command(copr)' 2>/dev/null || true
-                $PKG copr enable @caddy/caddy -y 2>/dev/null || true
-                $PKG install -y caddy 2>/dev/null || true
-                # Fallback: binary langsung
-                if ! command -v caddy &>/dev/null; then
-                  curl -fsSL "https://github.com/caddyserver/caddy/releases/download/v2.9.1/caddy_2.9.1_linux_amd64.tar.gz" \
-                    -o /tmp/caddy.tar.gz
-                  tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy
-                  chmod +x /usr/local/bin/caddy
-                  groupadd --system caddy 2>/dev/null || true
-                  useradd --system --gid caddy --create-home \
-                    --home-dir /var/lib/caddy --shell /usr/sbin/nologin caddy 2>/dev/null || true
-                  cat > /etc/systemd/system/caddy.service << 'CADDYSVC'
+              echo "🌐 Install Caddy via binary..."
+              curl -fsSL "https://github.com/caddyserver/caddy/releases/download/v2.9.1/caddy_2.9.1_linux_amd64.tar.gz" \
+                -o /tmp/caddy.tar.gz
+              tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy
+              chmod +x /usr/local/bin/caddy
+              groupadd --system caddy 2>/dev/null || true
+              useradd --system --gid caddy --create-home \
+                --home-dir /var/lib/caddy --shell /usr/sbin/nologin caddy 2>/dev/null || true
+              cat > /etc/systemd/system/caddy.service << 'CADDYSVC'
             [Unit]
             Description=Caddy
             After=network-online.target
@@ -114,11 +103,9 @@ jobs:
             [Install]
             WantedBy=multi-user.target
             CADDYSVC
-                  systemctl daemon-reload
-                fi
-              fi
-              mkdir -p /etc/caddy /var/log/caddy
+              systemctl daemon-reload
               systemctl enable caddy
+              mkdir -p /etc/caddy /var/log/caddy
               echo "✅ Caddy $(caddy version)"
             fi
 
