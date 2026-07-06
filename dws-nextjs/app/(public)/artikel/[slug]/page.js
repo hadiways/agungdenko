@@ -16,10 +16,13 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const slugs = await sanityFetch(ALL_SLUGS_QUERY);
+    if (!slugs || slugs.length === 0) {
+      return [{ slug: "placeholder" }];
+    }
     return slugs.map((slug) => ({ slug }));
   } catch (err) {
     console.error("Error generating static params", err);
-    return [];
+    return [{ slug: "placeholder" }];
   }
 }
 

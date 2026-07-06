@@ -9,10 +9,13 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const categories = await sanityFetch(ALL_CATEGORIES_QUERY);
+    if (!categories || categories.length === 0) {
+      return [{ slug: "placeholder" }];
+    }
     return categories.map((cat) => ({ slug: cat.slug }));
   } catch (err) {
     console.error("Error generating categories static params", err);
-    return [];
+    return [{ slug: "placeholder" }];
   }
 }
 

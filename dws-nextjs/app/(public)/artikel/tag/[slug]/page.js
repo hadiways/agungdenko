@@ -9,10 +9,13 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const tags = await sanityFetch(ALL_TAGS_QUERY);
+    if (!tags || tags.length === 0) {
+      return [{ slug: "placeholder" }];
+    }
     return tags.map((t) => ({ slug: t.slug }));
   } catch (err) {
     console.error("Error generating tags static params", err);
-    return [];
+    return [{ slug: "placeholder" }];
   }
 }
 
