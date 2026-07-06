@@ -53,7 +53,9 @@ export default {
               title: 'Alternative Text',
             }
           ]
-        }
+        },
+        { type: 'chart' },
+        { type: 'markdownBlock' }
       ]
     },
     {

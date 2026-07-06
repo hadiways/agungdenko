@@ -1,6 +1,7 @@
 import { PortableText } from "@portabletext/react";
 import { urlFor } from "@/lib/sanity/image";
 import { FileText } from "lucide-react";
+import { ArticleChart, ArticleMarkdown } from "./CustomBlocks";
 
 const components = {
   types: {
@@ -22,6 +23,8 @@ const components = {
         </figure>
       );
     },
+    chart: ({ value }) => <ArticleChart value={value} />,
+    markdownBlock: ({ value }) => <ArticleMarkdown value={value} />,
   },
   block: {
     h1: ({ children }) => <h1 className="text-3xl md:text-4xl font-display font-extrabold text-brand-darkBg mt-12 mb-4 leading-tight">{children}</h1>,

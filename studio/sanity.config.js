@@ -4,6 +4,8 @@ import article from "./schemas/article";
 import author from "./schemas/author";
 import category from "./schemas/category";
 import tag from "./schemas/tag";
+import chart from "./schemas/chart";
+import markdownBlock from "./schemas/markdownBlock";
 
 export default defineConfig({
   name: "default",
@@ -15,6 +17,6 @@ export default defineConfig({
   plugins: [structureTool()],
 
   schema: {
-    types: [article, author, category, tag],
+    types: [article, author, category, tag, chart, markdownBlock],
   },
 });
