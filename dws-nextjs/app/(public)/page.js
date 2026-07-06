@@ -72,24 +72,53 @@ export default function Home() {
         ]);
 
         const baseProducts = cmsProducts || [];
-        setServices(cmsServices || []);
-        setTestimonials(cmsTestimonials || []);
-        setPartners(cmsPartners || []);
-        setFeatures(cmsFeatures || []);
-        setGalleryItems(cmsGallery || []);
+        const baseServices = cmsServices || [];
+        const baseTestimonials = cmsTestimonials || [];
+        const basePartners = cmsPartners || [];
+        const baseFeatures = cmsFeatures || [];
+        const baseGallery = cmsGallery || [];
 
+        // 1. Services
+        const savedServices = localStorage.getItem("custom_services");
+        if (savedServices) {
+          try { setServices([...JSON.parse(savedServices), ...baseServices]); }
+          catch (e) { setServices(baseServices); }
+        } else { setServices(baseServices); }
+
+        // 2. Testimonials
+        const savedTestimonials = localStorage.getItem("custom_testimonials");
+        if (savedTestimonials) {
+          try { setTestimonials([...JSON.parse(savedTestimonials), ...baseTestimonials]); }
+          catch (e) { setTestimonials(baseTestimonials); }
+        } else { setTestimonials(baseTestimonials); }
+
+        // 3. Partners
+        const savedPartners = localStorage.getItem("custom_partners");
+        if (savedPartners) {
+          try { setPartners([...JSON.parse(savedPartners), ...basePartners]); }
+          catch (e) { setPartners(basePartners); }
+        } else { setPartners(basePartners); }
+
+        // 4. Features
+        const savedFeatures = localStorage.getItem("custom_features");
+        if (savedFeatures) {
+          try { setFeatures([...JSON.parse(savedFeatures), ...baseFeatures]); }
+          catch (e) { setFeatures(baseFeatures); }
+        } else { setFeatures(baseFeatures); }
+
+        // 5. Gallery
+        const savedGallery = localStorage.getItem("custom_gallery");
+        if (savedGallery) {
+          try { setGalleryItems([...JSON.parse(savedGallery), ...baseGallery]); }
+          catch (e) { setGalleryItems(baseGallery); }
+        } else { setGalleryItems(baseGallery); }
+
+        // 6. Products
         const savedProducts = localStorage.getItem("custom_products");
         if (savedProducts) {
-          try {
-            const custom = JSON.parse(savedProducts);
-            setProducts([...custom, ...baseProducts]);
-          } catch (e) {
-            console.error("Failed to load custom products", e);
-            setProducts(baseProducts);
-          }
-        } else {
-          setProducts(baseProducts);
-        }
+          try { setProducts([...JSON.parse(savedProducts), ...baseProducts]); }
+          catch (e) { setProducts(baseProducts); }
+        } else { setProducts(baseProducts); }
       } catch (err) {
         console.error("Failed to fetch CMS content", err);
       }

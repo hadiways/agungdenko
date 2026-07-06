@@ -1,17 +1,46 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { sanityFetch } from "@/lib/sanity/fetch";
 import { SERVICES_QUERY } from "@/lib/sanity/queries";
 
-export const metadata = {
-  title: "Layanan Kami | PT Denko Wahana Sakti",
-  description: "Layanan Penjualan, Rental, Servis, Sparepart Forklift & Material Handling PT Denko Wahana Sakti.",
-};
+export default function ServicesPage() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function ServicesPage() {
-  let services = [];
-  try {
-    services = await sanityFetch(SERVICES_QUERY);
-  } catch (err) {
-    console.error("Failed to load services in server side component", err);
+  useEffect(() => {
+    document.title = "Layanan Kami | PT Denko Wahana Sakti";
+    async function loadData() {
+      try {
+        const cmsServices = await sanityFetch(SERVICES_QUERY);
+        const baseServices = cmsServices || [];
+
+        const saved = localStorage.getItem("custom_services");
+        if (saved) {
+          try {
+            setServices([...JSON.parse(saved), ...baseServices]);
+          } catch (e) {
+            console.error("Failed to load custom services", e);
+            setServices(baseServices);
+          }
+        } else {
+          setServices(baseServices);
+        }
+      } catch (err) {
+        console.error("Failed to load services data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (

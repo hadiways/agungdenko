@@ -1,17 +1,46 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { sanityFetch } from "@/lib/sanity/fetch";
 import { TESTIMONIALS_QUERY } from "@/lib/sanity/queries";
 
-export const metadata = {
-  title: "Testimoni Pelanggan | PT Denko Wahana Sakti",
-  description: "Testimoni & Review Pelanggan PT Denko Wahana Sakti.",
-};
+export default function TestimonialsPage() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function TestimonialsPage() {
-  let testimonials = [];
-  try {
-    testimonials = await sanityFetch(TESTIMONIALS_QUERY);
-  } catch (err) {
-    console.error("Failed to load testimonials in server side component", err);
+  useEffect(() => {
+    document.title = "Testimoni Pelanggan | PT Denko Wahana Sakti";
+    async function loadData() {
+      try {
+        const cmsTestimonials = await sanityFetch(TESTIMONIALS_QUERY);
+        const baseTestimonials = cmsTestimonials || [];
+
+        const saved = localStorage.getItem("custom_testimonials");
+        if (saved) {
+          try {
+            setTestimonials([...JSON.parse(saved), ...baseTestimonials]);
+          } catch (e) {
+            console.error("Failed to load custom testimonials", e);
+            setTestimonials(baseTestimonials);
+          }
+        } else {
+          setTestimonials(baseTestimonials);
+        }
+      } catch (err) {
+        console.error("Failed to load testimonials data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
