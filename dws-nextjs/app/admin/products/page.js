@@ -63,14 +63,23 @@ export default function AdminProductsPage() {
     }
   };
 
+  const sanitizeInput = (str) => {
+    if (typeof str !== "string") return str;
+    let cleaned = str.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
+    cleaned = cleaned.replace(/on\w+\s*=\s*(['"])[^\1]*?\1/gi, "");
+    cleaned = cleaned.replace(/<[^>]*>/g, "");
+    return cleaned.trim();
+  };
+
   const handleAddProduct = (e) => {
     e.preventDefault();
+    const sanitizedName = sanitizeInput(form.name);
     const newProduct = {
-      id: "custom-" + Date.now() + "-" + form.name.toLowerCase().replace(/\s+/g, "-"),
-      name: form.name,
+      id: "custom-" + Date.now() + "-" + sanitizedName.toLowerCase().replace(/\s+/g, "-"),
+      name: sanitizedName,
       image: form.image || "/images/products/forklift-electric.jpg", // default fallback thumbnail
-      category: form.category,
-      description: form.description,
+      category: sanitizeInput(form.category),
+      description: sanitizeInput(form.description),
       isCustom: true, // mark to identify custom items
     };
 

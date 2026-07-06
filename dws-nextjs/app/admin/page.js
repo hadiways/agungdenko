@@ -103,9 +103,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const sanitizeInput = (str) => {
+    if (typeof str !== "string") return str;
+    let cleaned = str.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
+    cleaned = cleaned.replace(/on\w+\s*=\s*(['"])[^\1]*?\1/gi, "");
+    cleaned = cleaned.replace(/<[^>]*>/g, "");
+    return cleaned.trim();
+  };
+
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    localStorage.setItem("sales_profile", JSON.stringify(salesForm));
+    const sanitized = {
+      name: sanitizeInput(salesForm.name),
+      role: sanitizeInput(salesForm.role),
+      phone: sanitizeInput(salesForm.phone).replace(/[^\d+]/g, ""),
+      status: sanitizeInput(salesForm.status),
+      avatar: salesForm.avatar
+    };
+    localStorage.setItem("sales_profile", JSON.stringify(sanitized));
+    setSalesForm(sanitized);
     alert("Profil Sales berhasil disimpan secara dinamis!");
   };
 
