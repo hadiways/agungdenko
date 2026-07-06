@@ -1,0 +1,105 @@
+# ============================================================
+# Caddyfile - PT Agung Denko
+# Domain: agungdenko.asia
+# Server: 147.139.193.24
+# ============================================================
+
+# Redirect www ke non-www
+www.agungdenko.asia {
+	redir https://agungdenko.asia{uri} permanent
+}
+
+# Frontend - Static HTML Site
+agungdenko.asia {
+	# SSL otomatis dari Let's Encrypt (tanpa konfigurasi tambahan)
+	tls {
+		protocols tls1.2 tls1.3
+	}
+
+	# Root folder static site
+	root * /opt/dws-portal/dws-nextjs
+
+	# Aktifkan file server
+	file_server
+
+	# Caching untuk asset statis
+	@static {
+		path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.webp
+	}
+	header @static Cache-Control "public, max-age=2592000, no-transform"
+
+	# Security Headers
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "no-referrer-when-downgrade"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		Content-Security-Policy "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';"
+	}
+
+	# Fallback ke index.html jika file tidak ditemukan
+	try_files {path} /index.html
+
+	# Enkode Gzip
+	encode gzip
+
+	# Log akses
+	log {
+		output file /var/log/caddy/agungdenko-access.log
+		format json
+	}
+}
+
+# Backend API - Laravel PHP
+api.agungdenko.asia {
+	tls {
+		protocols tls1.2 tls1.3
+	}
+
+	# Root ke folder public Laravel
+	root * /opt/dws-portal/backend/public
+
+	# Security Headers
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		-X-Powered-By
+	}
+
+	# Enkode Gzip
+	encode gzip
+
+	# PHP-FPM handler untuk file .php
+	php_fastcgi unix//var/run/php/php8.3-fpm.sock {
+		env SERVER_PORT 443
+		env HTTPS on
+	}
+
+	# File server untuk asset statis (storage/public, dll)
+	file_server
+
+	# Caching asset statis
+	@static {
+		path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.webp
+	}
+	header @static Cache-Control "public, max-age=2592000, no-transform"
+
+	# Tolak akses ke file tersembunyi (.env, .htaccess, dll)
+	@hidden {
+		path /. *
+	}
+	respond @hidden 403
+
+	# Upload limit 25MB
+	request_body {
+		max_size 25MB
+	}
+
+	# Log akses
+	log {
+		output file /var/log/caddy/api-agungdenko-access.log
+		format json
+	}
+}

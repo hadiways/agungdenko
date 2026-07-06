@@ -20,13 +20,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            PROJECT_DIR="/var/www/dws-portal"
+            PROJECT_DIR="/opt/dws-portal"
             REPO_URL="https://github.com/hadiways/agungdenko.git"
 
             echo "🚀 Memulai proses deploy..."
 
             # Buat direktori parent jika belum ada
-            mkdir -p /var/www
+            mkdir -p /opt
 
             # Clone repo jika belum ada, pull jika sudah ada
             if [ ! -d "$PROJECT_DIR/.git" ]; then

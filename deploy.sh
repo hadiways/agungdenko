@@ -1,86 +1,87 @@
 #!/bin/bash
 
 # =========================================================================
-# PRODUCTION DEPLOYMENT SCRIPT FOR PT DENKO WAHANA SAKTI
+# PRODUCTION DEPLOYMENT SCRIPT - PT Agung Denko
+# Server: 147.139.193.24
+# Directory: /opt/dws-portal
+# Web Server: Caddy
 # =========================================================================
 
-# Exit immediately if a command exits with a non-zero status
 set -e
 
 # Config variables
-PROJECT_DIR="/var/www/dws-portal"
+PROJECT_DIR="/opt/dws-portal"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/dws-nextjs"
 
-echo "🚀 Starting Production Deployment..."
-
-# 1. Navigate to Project root and Git pull latest changes
-cd $PROJECT_DIR
-echo "📥 Fetching latest changes from Git..."
-git pull origin main
+echo "🚀 Memulai Production Deployment..."
 
 # ==========================================
-# BACKEND DEPLOYMENT (Laravel 12)
+# BACKEND DEPLOYMENT (Laravel)
 # ==========================================
-echo "⚙️ Deploying Backend (Laravel 12)..."
+echo "⚙️ Deploy Backend (Laravel)..."
 cd $BACKEND_DIR
 
-# Install composer dependencies (excluding dev packages)
-echo "📦 Installing composer dependencies..."
+# Install composer dependencies
+echo "📦 Install composer dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# Copy production environment if not already there
+# Copy production environment jika belum ada
 if [ ! -f .env ]; then
-    echo "⚠️ .env file not found, copying .env.production..."
+    echo "⚠️ File .env belum ada, menyalin .env.production..."
     cp .env.production .env
     php artisan key:generate --force
 fi
 
-# Run Database migrations
-echo "🗄️ Running migrations..."
+# Jalankan migrasi database
+echo "🗄️ Menjalankan migrasi database..."
 php artisan migrate --force
 
-# Seed essential lookups/configurations (non-destructive seeders)
-echo "🌱 Seeding lookups..."
+# Seed data penting
+echo "🌱 Seeding data konfigurasi..."
 php artisan db:seed --class=RoleAndPermissionSeeder --force
 php artisan db:seed --class=SettingSeeder --force
 php artisan db:seed --class=CategorySeeder --force
 
-# Create symbolic storage link
-echo "🔗 Linking storage..."
+# Buat symlink storage
+echo "🔗 Membuat symlink storage..."
 php artisan storage:link --force
 
-# Clear and rebuild cache (Config, Routes, Views)
-echo "⚡ Optimizing Laravel cache..."
+# Clear dan rebuild cache
+echo "⚡ Optimasi Laravel cache..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 
-# Restart Supervisor Laravel workers & scheduler
-echo "🔄 Restarting Supervisor Laravel workers & scheduler..."
+# Restart queue workers via Supervisor
+echo "🔄 Restart queue workers..."
 sudo supervisorctl restart laravel-worker:*
 sudo supervisorctl restart laravel-scheduler
 
+# Set permission folder
+echo "🔒 Mengatur permission folder..."
+chown -R www-data:www-data $BACKEND_DIR/storage $BACKEND_DIR/bootstrap/cache
+chmod -R 775 $BACKEND_DIR/storage $BACKEND_DIR/bootstrap/cache
+
 # ==========================================
-# FRONTEND DEPLOYMENT (Next.js 15)
+# FRONTEND DEPLOYMENT (Static HTML)
 # ==========================================
-echo "🌐 Deploying Frontend (Next.js 15)..."
-cd $FRONTEND_DIR
+echo "🌐 Deploy Frontend (Static HTML)..."
 
-# Install npm packages
-echo "📦 Installing npm dependencies..."
-npm ci --only=production
+# Pastikan direktori log Caddy ada
+mkdir -p /var/log/caddy
 
-# Build Next.js
-echo "🏗️ Building Next.js production bundle..."
-npm run build
+# Copy Caddyfile ke lokasi sistem
+echo "📋 Update Caddyfile..."
+cp $PROJECT_DIR/Caddyfile /etc/caddy/Caddyfile
 
-# Reload PM2 application to apply changes with zero-downtime
-echo "🔄 Reloading PM2 frontend app..."
-pm2 reload $PROJECT_DIR/pm2.config.js --env production
+# Validasi syntax Caddyfile
+echo "✅ Validasi Caddyfile..."
+caddy validate --config /etc/caddy/Caddyfile
 
-# Ensure PM2 saves current processes
-pm2 save
+# Reload Caddy (tanpa downtime)
+echo "🔄 Reload Caddy..."
+systemctl reload caddy
 
-echo "✅ Deployment completed successfully!"
+echo "✅ Deployment selesai!"
