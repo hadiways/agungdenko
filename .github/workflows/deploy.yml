@@ -20,40 +20,119 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
+            set -e
             PROJECT_DIR="/opt/dws-portal"
             REPO_URL="https://github.com/hadiways/agungdenko.git"
 
             echo "🚀 Memulai proses deploy..."
 
-            # Deteksi package manager (apt / dnf / yum)
-            if command -v apt-get &>/dev/null; then
-              PKG="apt-get"
-              $PKG update -y
-            elif command -v dnf &>/dev/null; then
+            # ── Deteksi package manager ──────────────────────────
+            if command -v dnf &>/dev/null; then
               PKG="dnf"
             elif command -v yum &>/dev/null; then
               PKG="yum"
+            else
+              PKG="apt-get"
+              apt-get update -y
             fi
 
-            # Install git jika belum ada
+            # ── Install Git ──────────────────────────────────────
             if ! command -v git &>/dev/null; then
               echo "📦 Install git..."
               $PKG install -y git
             fi
 
-            mkdir -p /opt
+            # ── Install PHP 8.3 ──────────────────────────────────
+            if ! command -v php &>/dev/null; then
+              echo "🐘 Install PHP 8.3..."
+              if [ "$PKG" = "apt-get" ]; then
+                add-apt-repository ppa:ondrej/php -y
+                apt-get update -y
+                apt-get install -y php8.3 php8.3-fpm php8.3-cli php8.3-common \
+                  php8.3-mysql php8.3-mbstring php8.3-xml php8.3-curl \
+                  php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl php8.3-tokenizer
+              else
+                $PKG install -y epel-release || true
+                $PKG install -y https://rpms.remirepo.net/enterprise/remi-release-8.rpm 2>/dev/null || \
+                $PKG install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm 2>/dev/null || true
+                if command -v dnf &>/dev/null; then
+                  dnf module reset php -y || true
+                  dnf module enable php:remi-8.3 -y || true
+                fi
+                $PKG install -y php php-fpm php-cli php-common \
+                  php-mysqlnd php-mbstring php-xml php-curl \
+                  php-zip php-bcmath php-gd php-intl php-opcache
+              fi
+              systemctl enable php-fpm 2>/dev/null || systemctl enable php8.3-fpm 2>/dev/null || true
+              systemctl start php-fpm 2>/dev/null || systemctl start php8.3-fpm 2>/dev/null || true
+              echo "✅ PHP $(php -v | head -1)"
+            fi
 
-            # Clone repo jika belum ada, pull jika sudah ada
+            # ── Install Composer ─────────────────────────────────
+            if ! command -v composer &>/dev/null; then
+              echo "🎼 Install Composer..."
+              curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              echo "✅ $(composer --version)"
+            fi
+
+            # ── Install Caddy ────────────────────────────────────
+            if ! command -v caddy &>/dev/null; then
+              echo "🌐 Install Caddy..."
+              if [ "$PKG" = "apt-get" ]; then
+                curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+                  | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+                curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+                  | tee /etc/apt/sources.list.d/caddy-stable.list
+                apt-get update -y && apt-get install -y caddy
+              else
+                $PKG install -y 'dnf-command(copr)' 2>/dev/null || true
+                $PKG copr enable @caddy/caddy -y 2>/dev/null || true
+                $PKG install -y caddy 2>/dev/null || true
+                # Fallback: binary langsung
+                if ! command -v caddy &>/dev/null; then
+                  curl -fsSL "https://github.com/caddyserver/caddy/releases/download/v2.9.1/caddy_2.9.1_linux_amd64.tar.gz" \
+                    -o /tmp/caddy.tar.gz
+                  tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy
+                  chmod +x /usr/local/bin/caddy
+                  groupadd --system caddy 2>/dev/null || true
+                  useradd --system --gid caddy --create-home \
+                    --home-dir /var/lib/caddy --shell /usr/sbin/nologin caddy 2>/dev/null || true
+                  cat > /etc/systemd/system/caddy.service << 'CADDYSVC'
+            [Unit]
+            Description=Caddy
+            After=network-online.target
+            Requires=network-online.target
+            [Service]
+            Type=notify
+            User=caddy
+            Group=caddy
+            ExecStart=/usr/local/bin/caddy run --environ --config /etc/caddy/Caddyfile
+            ExecReload=/usr/local/bin/caddy reload --config /etc/caddy/Caddyfile --force
+            TimeoutStopSec=5s
+            LimitNOFILE=1048576
+            AmbientCapabilities=CAP_NET_BIND_SERVICE
+            [Install]
+            WantedBy=multi-user.target
+            CADDYSVC
+                  systemctl daemon-reload
+                fi
+              fi
+              mkdir -p /etc/caddy /var/log/caddy
+              systemctl enable caddy
+              echo "✅ Caddy $(caddy version)"
+            fi
+
+            # ── Clone atau Pull Repo ─────────────────────────────
+            mkdir -p /opt
             if [ ! -d "$PROJECT_DIR/.git" ]; then
               echo "📥 Cloning repository..."
               git clone "$REPO_URL" "$PROJECT_DIR"
             else
               echo "📥 Pulling perubahan terbaru..."
-              cd "$PROJECT_DIR"
-              git pull origin main
+              cd "$PROJECT_DIR" && git pull origin main
             fi
 
-            echo "⚙️ Menjalankan deploy script..."
+            # ── Jalankan deploy.sh ───────────────────────────────
+            echo "⚙️ Menjalankan deploy.sh..."
             cd "$PROJECT_DIR"
             bash deploy.sh
-
