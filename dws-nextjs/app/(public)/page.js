@@ -7,7 +7,8 @@ import { PRODUCTS_DATA } from "@/data/products";
 import { SERVICES_DATA } from "@/data/services";
 import { TESTIMONIALS_DATA } from "@/data/testimonials";
 import { PARTNERS_DATA } from "@/data/partners";
-import HeroRotatingText from "@/components/HeroRotatingText";
+import HeroIndustryRotator from "@/components/HeroIndustryRotator";
+import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare } from "lucide-react";
 
 export default function Home() {
   const scrollRef = useRef(null);
@@ -101,10 +102,11 @@ export default function Home() {
               ✓ Distributor Resmi Material Handling
             </span>
             
-            {/* Heading */}
+            {/* Heading with integrated Industry Rotator */}
             <h1 className="text-white font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-tight">
               Solusi Material Handling <br />
-              <span className="text-brand-blueLight">untuk Industri Modern</span>
+              <span className="text-white">untuk </span>
+              <HeroIndustryRotator />
             </h1>
             
             {/* Description */}
@@ -112,26 +114,23 @@ export default function Home() {
               Kami menyediakan penjualan, rental, service, dan sparepart forklift dengan kualitas terbaik dan layanan profesional.
             </p>
 
-            {/* Rotating Text Block */}
-            <HeroRotatingText />
-
-            {/* Trust Points (Checkmarks Row) */}
+            {/* Trust Indicators (One horizontal row, compact badges with small Lucide icons) */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2 text-xs sm:text-sm text-gray-300">
               <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-                Produk Berkualitas
+                <ShieldCheck className="w-4 h-4 text-brand-blueLight" />
+                <span>Produk Original</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-                Layanan Terpercaya
+                <Tag className="w-4 h-4 text-brand-blueLight" />
+                <span>Harga Kompetitif</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-                Harga Kompetitif
+                <Zap className="w-4 h-4 text-brand-blueLight" />
+                <span>Support Cepat</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-green-400 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-                Support Cepat
+                <Package className="w-4 h-4 text-brand-blueLight" />
+                <span>Sparepart Ready</span>
               </span>
             </div>
             
@@ -139,23 +138,18 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href="/contact?subject=penawaran"
-                className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group"
+                className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group text-sm uppercase tracking-wider"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <FileText className="w-4 h-4" />
                 <span>Minta Penawaran</span>
               </Link>
               
               <Link
                 href="/products"
-                className="flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150"
+                className="flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150 text-sm uppercase tracking-wider group"
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
                 <span>Lihat Produk</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
@@ -179,14 +173,14 @@ export default function Home() {
               </div>
             </div>
             
-            {/* CTA Chat Whatsapp button */}
+            {/* CTA Chat Whatsapp button (with premium outline outline message icon and brand colors) */}
             <a 
               href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti."
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full bg-[#25D366] hover:bg-[#20ba56] text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
+              className="w-full border border-brand-blue hover:bg-brand-blue/10 text-brand-blueLight font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
             >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" /><path d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z" /></svg>
+              <MessageSquare className="w-4 h-4 text-brand-blueLight" />
               <span>Chat WhatsApp</span>
             </a>
           </div>

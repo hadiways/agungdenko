@@ -143,7 +143,7 @@ export default function Navbar() {
   return (
     <header
       id="main-header"
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 py-3.5 px-4 sm:px-6 md:px-12 flex items-center justify-between border-b ${
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 py-4 px-6 md:px-14 lg:px-16 flex items-center justify-between border-b ${
         isSticky
           ? "bg-[#0B1B2B]/95 backdrop-blur-md shadow-lg border-white/5"
           : "bg-transparent border-transparent"
@@ -170,7 +170,7 @@ export default function Navbar() {
       </Link>
 
       {/* Center Navigation Links (Desktop) */}
-      <nav className="hidden lg:flex items-center gap-6">
+      <nav className="hidden lg:flex items-center gap-9">
         
         {/* Dropdown 1: Produk (Mega Menu) */}
         <div 
@@ -444,17 +444,17 @@ export default function Navbar() {
       </nav>
 
       {/* Right Side: Phone & Dual CTA Actions (Desktop) */}
-      <div className="hidden lg:flex items-center gap-4 shrink-0">
+      <div className="hidden lg:flex items-center gap-6 shrink-0">
         
         {/* Phone Contact Block */}
         <div className="flex flex-col text-right">
-          <a href="tel:+622112345678" className={`text-xs font-bold flex items-center gap-1.5 justify-end transition-colors ${
-            shouldUseDarkText ? "text-brand-darkBg hover:text-brand-blue" : "text-white hover:text-brand-blueLight"
+          <a href="tel:+622112345678" className={`text-xs font-semibold flex items-center gap-1.5 justify-end transition-colors ${
+            shouldUseDarkText ? "text-gray-600 hover:text-brand-darkBg" : "text-gray-300 hover:text-white"
           }`}>
-            <Phone className="w-3.5 h-3.5 text-brand-blue" />
+            <Phone className="w-3 h-3 text-brand-blue" />
             <span>(021) 1234 5678</span>
           </a>
-          <span className={`text-[9px] transition-colors ${shouldUseDarkText ? "text-gray-500" : "text-gray-400"}`}>
+          <span className={`text-[9px] transition-colors ${shouldUseDarkText ? "text-gray-400" : "text-gray-500"}`}>
             Senin - Jumat 08.00 - 17.00
           </span>
         </div>
@@ -466,7 +466,7 @@ export default function Navbar() {
           rel="noopener noreferrer"
           className={`flex items-center gap-1.5 border font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all ${
             shouldUseDarkText 
-              ? "border-brand-darkBg/25 hover:bg-brand-darkBg/5 text-brand-darkBg" 
+              ? "border-brand-darkBg/20 hover:bg-brand-darkBg/5 text-brand-darkBg" 
               : "border-white/10 hover:bg-white/5 text-white"
           }`}
         >
