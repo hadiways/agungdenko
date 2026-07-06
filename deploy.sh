@@ -164,13 +164,16 @@ chmod -R 775 $BACKEND_DIR/bootstrap/cache
 # ==========================================
 echo ""
 echo "🌐 Deploy Frontend (Next.js Static Export + Caddy)..."
-
-echo "📦 Install frontend dependencies..."
 cd $FRONTEND_DIR
-npm install --legacy-peer-deps
 
-echo "🏗️ Building Next.js application..."
-npm run build
+if [ -d "out" ] && [ -f "out/index.html" ]; then
+    echo "✅ Frontend sudah di-build di runner, melewati npm build."
+else
+    echo "📦 Install frontend dependencies..."
+    npm install --legacy-peer-deps
+    echo "🏗️ Building Next.js application..."
+    npm run build
+fi
 
 # Pastikan direktori log Caddy ada dan diatur hak aksesnya secara rekursif
 mkdir -p /var/log/caddy /etc/caddy /var/lib/caddy
