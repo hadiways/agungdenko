@@ -25,15 +25,30 @@ jobs:
 
             echo "🚀 Memulai proses deploy..."
 
-            # Buat direktori parent jika belum ada
+            # Deteksi package manager (apt / dnf / yum)
+            if command -v apt-get &>/dev/null; then
+              PKG="apt-get"
+              $PKG update -y
+            elif command -v dnf &>/dev/null; then
+              PKG="dnf"
+            elif command -v yum &>/dev/null; then
+              PKG="yum"
+            fi
+
+            # Install git jika belum ada
+            if ! command -v git &>/dev/null; then
+              echo "📦 Install git..."
+              $PKG install -y git
+            fi
+
             mkdir -p /opt
 
             # Clone repo jika belum ada, pull jika sudah ada
             if [ ! -d "$PROJECT_DIR/.git" ]; then
-              echo "📥 Repo belum ada, cloning dari GitHub..."
+              echo "📥 Cloning repository..."
               git clone "$REPO_URL" "$PROJECT_DIR"
             else
-              echo "📥 Repo sudah ada, pulling perubahan terbaru..."
+              echo "📥 Pulling perubahan terbaru..."
               cd "$PROJECT_DIR"
               git pull origin main
             fi

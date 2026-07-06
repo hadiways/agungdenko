@@ -2,7 +2,7 @@
 
 # ============================================================
 # SERVER SETUP SCRIPT - PT Agung Denko
-# Server  : 147.139.193.24 (Alibaba Cloud)
+# Server  : 147.139.193.24 (Alibaba Cloud Linux / CentOS)
 # Domain  : agungdenko.asia
 # Dir     : /opt/dws-portal
 # Stack   : Caddy + PHP 8.3 + Laravel + Supervisor
@@ -16,65 +16,132 @@ echo "  SETUP SERVER AGUNGDENKO.ASIA"
 echo "========================================"
 echo ""
 
+# Deteksi package manager
+if command -v dnf &>/dev/null; then
+    PKG="dnf"
+elif command -v yum &>/dev/null; then
+    PKG="yum"
+else
+    echo "❌ Package manager tidak dikenali (bukan apt/yum/dnf)"
+    exit 1
+fi
+echo "📦 Package manager: $PKG"
+
 # ==========================================
 # 1. UPDATE SISTEM
 # ==========================================
-echo "📦 [1/7] Update sistem..."
-apt update -y && apt upgrade -y
+echo ""
+echo "📦 [1/6] Update sistem..."
+$PKG update -y
 
 # ==========================================
 # 2. INSTALL DEPENDENSI DASAR
 # ==========================================
-echo "🔧 [2/7] Install tools dasar..."
-apt install -y \
-    git curl wget unzip software-properties-common \
-    debian-keyring debian-archive-keyring apt-transport-https \
-    supervisor acl
+echo ""
+echo "🔧 [2/6] Install tools dasar..."
+$PKG install -y \
+    git curl wget unzip tar \
+    supervisor \
+    epel-release 2>/dev/null || true
+
+$PKG install -y epel-release || true
 
 # ==========================================
-# 3. INSTALL PHP 8.3
+# 3. INSTALL PHP 8.3 via Remi Repo
 # ==========================================
-echo "🐘 [3/7] Install PHP 8.3..."
-add-apt-repository ppa:ondrej/php -y
-apt update -y
-apt install -y \
-    php8.3 php8.3-fpm php8.3-cli php8.3-common \
-    php8.3-mysql php8.3-mbstring php8.3-xml php8.3-curl \
-    php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl \
-    php8.3-tokenizer php8.3-pdo php8.3-redis
+echo ""
+echo "🐘 [3/6] Install PHP 8.3..."
+
+# Install Remi repo
+$PKG install -y https://rpms.remirepo.net/enterprise/remi-release-8.rpm 2>/dev/null || \
+$PKG install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm 2>/dev/null || true
+
+# Enable PHP 8.3 module
+if command -v dnf &>/dev/null; then
+    dnf module reset php -y || true
+    dnf module enable php:remi-8.3 -y || true
+fi
+
+$PKG install -y \
+    php php-fpm php-cli php-common \
+    php-mysqlnd php-mbstring php-xml php-curl \
+    php-zip php-bcmath php-gd php-intl \
+    php-opcache php-process
 
 # Aktifkan PHP-FPM
-systemctl enable php8.3-fpm
-systemctl start php8.3-fpm
-echo "✅ PHP 8.3 siap"
+systemctl enable php-fpm
+systemctl start php-fpm
+echo "✅ PHP $(php -v | head -1 | cut -d' ' -f2) siap"
 
 # ==========================================
 # 4. INSTALL COMPOSER
 # ==========================================
-echo "🎼 [4/7] Install Composer..."
+echo ""
+echo "🎼 [4/6] Install Composer..."
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-echo "✅ Composer siap: $(composer --version)"
+echo "✅ $(composer --version)"
 
 # ==========================================
 # 5. INSTALL CADDY
 # ==========================================
-echo "🌐 [5/7] Install Caddy..."
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-    | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+echo ""
+echo "🌐 [5/6] Install Caddy..."
 
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
-    | tee /etc/apt/sources.list.d/caddy-stable.list
+# Caddy via COPR untuk RHEL/CentOS/AlmaLinux
+$PKG install -y 'dnf-command(copr)' 2>/dev/null || true
+$PKG copr enable @caddy/caddy -y 2>/dev/null || true
+$PKG install -y caddy 2>/dev/null || true
 
-apt update -y && apt install -y caddy
+# Fallback: install manual via binary jika COPR gagal
+if ! command -v caddy &>/dev/null; then
+    echo "⚠️ COPR gagal, install Caddy via binary..."
+    CADDY_VER="2.9.1"
+    curl -fsSL "https://github.com/appleboy/caddy/releases/download/v${CADDY_VER}/caddy_${CADDY_VER}_linux_amd64.tar.gz" -o /tmp/caddy.tar.gz || \
+    curl -fsSL "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VER}/caddy_${CADDY_VER}_linux_amd64.tar.gz" -o /tmp/caddy.tar.gz
+    tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy
+    chmod +x /usr/local/bin/caddy
 
-# Aktifkan Caddy
+    # Buat user & service caddy
+    groupadd --system caddy 2>/dev/null || true
+    useradd --system --gid caddy --create-home --home-dir /var/lib/caddy \
+        --shell /usr/sbin/nologin --comment "Caddy web server" caddy 2>/dev/null || true
+
+    mkdir -p /etc/caddy /var/log/caddy
+    chown caddy:caddy /var/log/caddy
+
+    cat > /etc/systemd/system/caddy.service << 'EOF'
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User=caddy
+Group=caddy
+ExecStart=/usr/local/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/local/bin/caddy reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload
+fi
+
 systemctl enable caddy
-echo "✅ Caddy siap: $(caddy version)"
+echo "✅ Caddy $(caddy version) siap"
 
 # ==========================================
-# 6. CLONE REPO KE /opt/dws-portal
+# 6. CLONE REPO & KONFIGURASI
 # ==========================================
-echo "📥 [6/7] Clone repository..."
+echo ""
+echo "📥 [6/6] Clone repository..."
 mkdir -p /opt
 
 if [ ! -d "/opt/dws-portal/.git" ]; then
@@ -85,34 +152,23 @@ else
     cd /opt/dws-portal && git pull origin main
 fi
 
-# ==========================================
-# 7. KONFIGURASI CADDY
-# ==========================================
-echo "⚙️  [7/7] Konfigurasi Caddy..."
-
-# Buat direktori log Caddy
-mkdir -p /var/log/caddy
-chown caddy:caddy /var/log/caddy
-
-# Copy Caddyfile dari repo
+# Konfigurasi Caddy
+echo ""
+echo "⚙️  Konfigurasi Caddy..."
+mkdir -p /var/log/caddy /etc/caddy
+chown caddy:caddy /var/log/caddy 2>/dev/null || true
 cp /opt/dws-portal/Caddyfile /etc/caddy/Caddyfile
-
-# Validasi dan reload
 caddy validate --config /etc/caddy/Caddyfile
+systemctl start caddy
 systemctl reload caddy
-echo "✅ Caddy sudah dikonfigurasi"
 
-# ==========================================
-# 8. KONFIGURASI SUPERVISOR
-# ==========================================
+# Konfigurasi Supervisor
 echo "👷 Konfigurasi Supervisor..."
-cp /opt/dws-portal/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf 2>/dev/null || true
-cp /opt/dws-portal/supervisor/laravel-scheduler.conf /etc/supervisor/conf.d/laravel-scheduler.conf 2>/dev/null || true
-supervisorctl reread && supervisorctl update
+systemctl enable supervisord 2>/dev/null || systemctl enable supervisor 2>/dev/null || true
+systemctl start supervisord 2>/dev/null || systemctl start supervisor 2>/dev/null || true
 
-# ==========================================
-# 9. SETUP BACKEND LARAVEL
-# ==========================================
+# Setup Laravel Backend
+echo ""
 echo "🚀 Setup Backend Laravel..."
 cd /opt/dws-portal/backend
 
@@ -128,10 +184,19 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-chown -R www-data:www-data /opt/dws-portal/backend/storage
-chown -R www-data:www-data /opt/dws-portal/backend/bootstrap/cache
+# Permission
+PHP_FPM_USER=$(ps aux | grep php-fpm | grep -v root | grep -v grep | awk '{print $1}' | head -1)
+PHP_FPM_USER="${PHP_FPM_USER:-nginx}"
+chown -R ${PHP_FPM_USER}:${PHP_FPM_USER} /opt/dws-portal/backend/storage
+chown -R ${PHP_FPM_USER}:${PHP_FPM_USER} /opt/dws-portal/backend/bootstrap/cache
 chmod -R 775 /opt/dws-portal/backend/storage
 chmod -R 775 /opt/dws-portal/backend/bootstrap/cache
+
+# Firewall - buka port 80 & 443
+echo "🔥 Buka port 80 & 443..."
+firewall-cmd --permanent --add-service=http 2>/dev/null || true
+firewall-cmd --permanent --add-service=https 2>/dev/null || true
+firewall-cmd --reload 2>/dev/null || true
 
 # ==========================================
 # SELESAI
@@ -144,7 +209,7 @@ echo ""
 echo "  🌐 Frontend : https://agungdenko.asia"
 echo "  🔗 API      : https://api.agungdenko.asia"
 echo "  📁 Direktori: /opt/dws-portal"
-echo "  ⚙️  Web     : Caddy $(caddy version)"
+echo "  ⚙️  Caddy   : $(caddy version)"
 echo "  🐘 PHP      : $(php -v | head -1)"
 echo ""
 echo "  Cek status Caddy : systemctl status caddy"
