@@ -1,0 +1,12 @@
+{
+    "phpcs.enable": true,
+    "phpcs.executablePath": "${workspaceFolder}/vendor/bin/phpcs",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "php.validate.enable": false,
+    "php.suggest.basic": false,
+    "intelephense.environment.documentRoot": "${workspaceFolder}",
+    "intelephense.environment.includePaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/vendor"
+    ]
+}

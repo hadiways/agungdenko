@@ -1,0 +1,8 @@
+{
+  "name": "dws-nextjs-static",
+  "version": "1.0.0",
+  "description": "PT Denko Wahana Sakti static modular site",
+  "scripts": {
+    "dev": "python3 -m http.server 3001"
+  }
+}
