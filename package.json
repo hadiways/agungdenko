@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "PT Denko Wahana Sakti static modular site root",
   "scripts": {
-    "dev": "python3 -m http.server 3001 -d dws-nextjs"
+    "dev": "npm run dev --prefix dws-nextjs",
+    "build": "npm run build --prefix dws-nextjs",
+    "start": "npm run start --prefix dws-nextjs"
   }
 }

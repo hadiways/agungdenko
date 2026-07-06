@@ -1,0 +1,402 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { FEATURES_DATA } from "@/data/features";
+import { PRODUCTS_DATA } from "@/data/products";
+import { SERVICES_DATA } from "@/data/services";
+import { TESTIMONIALS_DATA } from "@/data/testimonials";
+import { PARTNERS_DATA } from "@/data/partners";
+
+export default function Home() {
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("opacity-100", "translate-y-0");
+            entry.target.classList.remove("opacity-0", "translate-y-4");
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+
+    document.querySelectorAll(".fade-in-on-scroll").forEach((el) => {
+      el.classList.add("transition-all", "duration-700", "transform", "opacity-0", "translate-y-4");
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const card = scrollRef.current.querySelector(".flex-shrink-0");
+      const cardWidth = card ? card.clientWidth : clientWidth;
+      const index = Math.round(scrollLeft / (cardWidth + 24));
+      setActiveIndex(index);
+    }
+  };
+
+  const scrollToIdx = (index) => {
+    if (scrollRef.current) {
+      const card = scrollRef.current.querySelector(".flex-shrink-0");
+      const cardWidth = card ? card.clientWidth : scrollRef.current.clientWidth;
+      scrollRef.current.scrollTo({
+        left: index * (cardWidth + 24),
+        behavior: "smooth",
+      });
+      setActiveIndex(index);
+    }
+  };
+
+  const scrollNext = () => {
+    if (scrollRef.current) {
+      const card = scrollRef.current.querySelector(".flex-shrink-0");
+      const cardWidth = card ? card.clientWidth : scrollRef.current.clientWidth;
+      scrollRef.current.scrollBy({ left: cardWidth + 24, behavior: "smooth" });
+    }
+  };
+
+  const scrollPrev = () => {
+    if (scrollRef.current) {
+      const card = scrollRef.current.querySelector(".flex-shrink-0");
+      const cardWidth = card ? card.clientWidth : scrollRef.current.clientWidth;
+      scrollRef.current.scrollBy({ left: -(cardWidth + 24), behavior: "smooth" });
+    }
+  };
+
+  const triggerSelectProduct = (productId) => {
+    window.dispatchEvent(new CustomEvent("select-product", { detail: productId }));
+  };
+
+  const galleryItems = [
+    { title: "Forklift Warehouse", image: "/images/gallery/gallery-1.jpg" },
+    { title: "Scissor Lift", image: "/images/gallery/gallery-2.jpg" },
+    { title: "Maintenance", image: "/images/gallery/gallery-3.jpg" },
+    { title: "Delivery Truck", image: "/images/gallery/gallery-4.jpg" },
+    { title: "Service Technician", image: "/images/gallery/gallery-5.jpg" },
+    { title: "Team Photo", image: "/images/gallery/gallery-6.jpg" },
+  ];
+
+  return (
+    <>
+      {/* 2. Hero Section */}
+      <section id="home" className="relative min-h-screen flex items-center pt-24 pb-20 overflow-hidden bg-brand-darkBg">
+        <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: "url('/images/hero-forklift.jpg')" }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-darkBg via-brand-darkBg/90 to-brand-darkBg/40 lg:block hidden"></div>
+          <div className="absolute inset-0 bg-brand-darkBg/85 lg:hidden"></div>
+        </div>
+
+        <div className="container mx-auto px-6 md:px-12 relative z-10 flex flex-col justify-between h-full min-h-[70vh]">
+          <div className="max-w-3xl my-auto">
+            <span className="text-brand-blueLight font-bold text-xs uppercase tracking-widest bg-brand-blue/20 border border-brand-blueLight/30 px-3 py-1 rounded-full mb-6 inline-block">
+              PT Denko Wahana Sakti
+            </span>
+            
+            <h1 className="text-white font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-tight mb-4">
+              Solusi Material Handling <span className="text-brand-accent">Terbaik</span> untuk Industri Anda
+            </h1>
+            
+            <p className="text-brand-blueLight font-medium text-sm sm:text-base tracking-wide border-l-2 border-brand-blueLight pl-4 mb-6 leading-relaxed">
+              Forklift • Reach Truck • Stacker • Scissor Lift • Aerial Work Platform
+            </p>
+            
+            <p className="text-gray-300 text-base sm:text-lg mb-10 max-w-xl leading-relaxed">
+              Distributor material handling dengan layanan lengkap, cepat, dan profesional.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20material%20handling%20perusahaan%20saya." target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 group">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="currentColor" fillRule="evenodd" d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" clipRule="evenodd"/>
+                  <path fill="currentColor" d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z"/>
+                </svg>
+                Hubungi via WhatsApp
+              </a>
+              
+              <button onClick={() => triggerSelectProduct("")} className="flex items-center justify-center border-2 border-brand-blue/40 hover:border-brand-blue hover:bg-brand-blue text-white font-bold px-8 py-4 rounded-xl active:scale-95 transition-all duration-150">
+                Minta Penawaran
+              </button>
+              
+              <Link href="/products" className="flex items-center justify-center text-white/80 hover:text-white font-semibold px-4 py-4 transition-colors">
+                Lihat Produk <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Sales Executive Card */}
+          <div className="mt-12 lg:self-end lg:mt-0 glassmorphic rounded-2xl p-5 flex items-center gap-4 max-w-sm shadow-2xl border border-white/10 animate-bounce-slow">
+            <div className="w-14 h-14 rounded-full bg-brand-blue/20 border-2 border-brand-blueLight/60 flex items-center justify-center text-brand-blueLight">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold text-base">Agung Ramdhani</h4>
+              <p className="text-gray-400 text-xs">Sales Executive</p>
+              <div className="h-[1px] bg-white/10 my-1.5"></div>
+              <p className="text-brand-blueLight font-bold text-[10px] uppercase tracking-wider">PT Denko Wahana Sakti</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Feature Bar */}
+      <section className="relative z-20 px-6 md:px-12 -mt-10 md:-mt-16">
+        <div className="container mx-auto">
+          <div id="benefit-bar" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 bg-white rounded-2xl p-6 md:p-8 shadow-2xl border border-blue-100">
+            {FEATURES_DATA.map((b, idx) => (
+              <div key={idx} className="benefit-card flex flex-col items-center text-center p-3 group hover:scale-105 transition-all duration-300">
+                <div className="w-12 h-12 rounded-full bg-brand-lightBg flex items-center justify-center mb-4 group-hover:bg-brand-blue transition-colors duration-300 shadow-sm shadow-brand-blue/5">
+                  <div dangerouslySetInnerHTML={{ __html: b.icon }} />
+                </div>
+                <h4 className="text-brand-darkBg font-semibold text-xs leading-snug group-hover:text-brand-blue transition-colors duration-200">{b.title}</h4>
+                <p className="text-gray-500 text-[10px] mt-1.5 leading-normal hidden lg:block">{b.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Produk Kami */}
+      <section id="produk" className="py-24 bg-brand-lightBg px-6 md:px-12 fade-in-on-scroll">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Pilihan Terbaik</span>
+              <h2 className="text-brand-darkBg font-display font-extrabold text-3xl md:text-4xl">Produk Kami</h2>
+              <p className="text-gray-500 mt-2 max-w-2xl text-sm sm:text-base">
+                Berbagai pilihan material handling berkualitas tinggi untuk mendukung kebutuhan industri dan pergudangan Anda.
+              </p>
+            </div>
+            <Link href="/products" className="mt-4 md:mt-0 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-lg active:scale-95 transition-all duration-150 self-start md:self-auto">
+              Lihat Semua Produk
+            </Link>
+          </div>
+
+          <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {PRODUCTS_DATA.map((p) => (
+              <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
+                <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
+                  <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                  <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
+                    {p.category}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
+                  <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
+                </div>
+                <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
+                  Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Tentang Kami + Layanan Kami */}
+      <section id="tentang" className="py-24 bg-white px-6 md:px-12 border-t border-gray-100 fade-in-on-scroll">
+        <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left Column: Tentang Kami */}
+          <div className="bg-brand-lightBg rounded-3xl p-6 sm:p-8 shadow-xl border border-blue-100/50 flex flex-col justify-between">
+            <div>
+              <div className="overflow-hidden rounded-2xl mb-8 aspect-video relative group shadow-sm">
+                <img src="/images/office.jpg" alt="Office PT Denko Wahana Sakti" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <span className="absolute bottom-4 left-4 text-white font-bold text-sm tracking-wide bg-brand-blue px-3 py-1 rounded">HEADQUARTERS</span>
+              </div>
+              
+              <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Tentang Kami</span>
+              <h2 className="text-brand-darkBg font-display font-extrabold text-3xl mb-6">PT Denko Wahana Sakti</h2>
+              
+              <div className="space-y-4 text-gray-600 text-sm sm:text-base leading-relaxed">
+                <p>
+                  PT Denko Wahana Sakti adalah distributor material handling yang menyediakan berbagai kebutuhan industri seperti Forklift Electric, Forklift Diesel, Reach Truck, Electric Stacker, Hand Pallet, Scissor Lift, Boom Lift, hingga Aerial Work Platform.
+                </p>
+              </div>
+            </div>
+            <Link href="/about" className="mt-8 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider px-8 py-3.5 rounded-xl shadow-lg hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 self-start">
+              Selengkapnya
+            </Link>
+          </div>
+
+          {/* Right Column: Layanan Kami */}
+          <div id="layanan" className="bg-brand-darkCard rounded-3xl p-6 sm:p-8 shadow-xl border border-white/5 flex flex-col justify-between">
+            <div>
+              <span className="text-brand-blueLight font-bold text-sm uppercase tracking-wider block mb-2">Layanan Kami</span>
+              <h2 className="text-white font-display font-extrabold text-3xl mb-4">Solusi Terbaik</h2>
+              <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+                Kami berkomitmen memberikan pelayanan menyeluruh dan dukungan purna jual terbaik demi menunjang produktivitas operasional bisnis Anda.
+              </p>
+              <div id="services-list" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {SERVICES_DATA.map((s, idx) => (
+                  <div key={idx} className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/5 hover:border-brand-blueLight/20 hover:bg-white/10 transition-all duration-300 group">
+                    <div className="w-10 h-10 rounded-xl bg-brand-blue/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue transition-colors">
+                      <span className="group-hover:text-white transition-colors duration-200" dangerouslySetInnerHTML={{ __html: s.icon }} />
+                    </div>
+                    <span className="text-gray-200 group-hover:text-white font-medium text-xs sm:text-sm transition-colors">{s.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-12 bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blueLight">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <div>
+                  <h4 className="text-white text-sm font-semibold">Butuh Bantuan Cepat?</h4>
+                  <p className="text-gray-400 text-xs">Konsultasikan kebutuhan unit Anda sekarang.</p>
+                </div>
+              </div>
+              <a href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20terkait%20kebutuhan%20material%20handling." target="_blank" rel="noopener noreferrer" className="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
+                Tanya Sales
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Mengapa Memilih Kami + Testimoni */}
+      <section className="py-24 bg-white px-6 md:px-12 fade-in-on-scroll">
+        <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+          {/* Left Column: Mengapa Memilih Kami? */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Keunggulan Utama</span>
+              <h2 className="text-brand-darkBg font-display font-extrabold text-3xl mb-8">Mengapa Memilih Kami?</h2>
+              <ul id="why-us-list" className="space-y-4">
+                {[
+                  "Produk Original & Bergaransi",
+                  "Harga Kompetitif",
+                  "Teknisi Berpengalaman",
+                  "After Sales Terbaik",
+                  "Sparepart Ready Stock",
+                  "Pengiriman Cepat",
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-brand-lightBg flex items-center justify-center text-brand-blue flex-shrink-0 mt-0.5 border border-brand-blueLight/20">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span className="text-gray-700 text-sm sm:text-base font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-12 bg-brand-lightBg rounded-2xl p-6 border border-blue-100 flex items-center justify-between overflow-hidden relative min-h-[160px]">
+              <div className="max-w-[60%]">
+                <h4 className="text-brand-darkBg font-bold text-base leading-snug">Jaminan Kualitas Unit PT Denko Wahana Sakti</h4>
+                <p className="text-gray-500 text-xs mt-2">Dapatkan garansi resmi distributor hingga 2 tahun beserta servis berkala.</p>
+              </div>
+              <img src="/images/products/forklift-diesel.jpg" alt="Diesel Forklift" className="w-40 h-40 object-contain absolute -right-4 -bottom-4 filter drop-shadow-xl animate-float" loading="lazy" />
+            </div>
+          </div>
+
+          {/* Right Column: Testimoni */}
+          <div id="testimoni" className="bg-brand-lightBg rounded-3xl p-6 sm:p-8 border border-blue-100 flex flex-col justify-between shadow-sm">
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Testimoni Pelanggan</span>
+                  <h2 className="text-brand-darkBg font-display font-extrabold text-3xl">Apa Kata Mereka?</h2>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={scrollPrev} className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-blue bg-white flex items-center justify-center text-gray-600 hover:text-brand-blue transition-colors focus:outline-none">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                  </button>
+                  <button onClick={scrollNext} className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-blue bg-white flex items-center justify-center text-gray-600 hover:text-brand-blue transition-colors focus:outline-none">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6"
+              >
+                {TESTIMONIALS_DATA.map((t, idx) => (
+                  <div key={idx} className="w-full md:w-[calc(33.333%-16px)] flex-shrink-0 snap-center bg-white border border-blue-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-[180px]">
+                    <div>
+                      <div className="flex gap-1 text-brand-accent mb-4">
+                        {Array(t.rating).fill(0).map((_, i) => (
+                          <svg key={i} className="w-4 h-4 fill-current text-brand-accent" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                        ))}
+                      </div>
+                      <p className="text-gray-600 text-xs sm:text-sm italic mb-6 leading-relaxed">"{t.comment}"</p>
+                    </div>
+                    <div className="border-t border-gray-100 pt-4">
+                      <h4 className="text-brand-darkBg font-bold text-sm leading-tight">{t.company}</h4>
+                      <p className="text-gray-400 text-[10px] mt-0.5">Verified Client</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center gap-2 mt-4">
+              {TESTIMONIALS_DATA.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => scrollToIdx(idx)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-brand-blue w-5' : 'bg-gray-300'}`}
+                ></button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Galeri Kegiatan */}
+      <section id="galeri" className="py-24 bg-brand-lightBg px-6 md:px-12 border-t border-b border-gray-100 fade-in-on-scroll">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Dokumentasi</span>
+              <h2 className="text-brand-darkBg font-display font-extrabold text-3xl md:text-4xl">Galeri Kegiatan</h2>
+            </div>
+            <Link href="/gallery" className="mt-4 md:mt-0 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-lg active:scale-95 transition-all duration-150 self-start md:self-auto">
+              Lihat Semua Galeri
+            </Link>
+          </div>
+          <div id="gallery-grid" className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {galleryItems.map((g, idx) => (
+              <div key={idx} className="relative overflow-hidden rounded-2xl group aspect-[4/3] bg-brand-darkBg cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300">
+                <img src={g.image} alt={g.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out filter brightness-95 group-hover:brightness-100" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-darkBg/90 via-brand-darkBg/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                  <span className="text-white font-semibold text-xs sm:text-sm">{g.title}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Partner Kami */}
+      <section className="py-16 bg-white px-6 md:px-12 border-b border-gray-100">
+        <div className="container mx-auto">
+          <span className="text-gray-400 font-bold text-xs uppercase tracking-widest text-center block mb-8">PARTNER RESMI & DISTRIBUSI KAMI</span>
+          <div id="partners-list" className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+            {PARTNERS_DATA.map((p, idx) => (
+              <div key={idx} className="flex items-center justify-center px-4 py-3 bg-brand-lightBg/50 border border-brand-blueLight/10 rounded-xl hover:border-brand-blueLight/30 hover:bg-white hover:shadow-md transition-all duration-300 group cursor-default">
+                <span className="text-gray-400 font-display font-extrabold text-xs sm:text-sm tracking-widest group-hover:text-brand-blue transition-colors uppercase italic">{p.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Floating WhatsApp Button */}
+      <a href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti." target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center animate-bounce-slow" title="Hubungi Agung via WhatsApp">
+        <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" fillRule="evenodd" d="M12 4a8 8 0 0 0-6.895 12.06l.569.718-.697 2.359 2.32-.648.379.243A8 8 0 1 0 12 4ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10a9.96 9.96 0 0 1-5.016-1.347l-4.948 1.382 1.426-4.829-.006-.007-.033-.055A9.958 9.958 0 0 1 2 12Z" clipRule="evenodd"/>
+          <path fill="currentColor" d="M16.735 13.492c-.038-.018-1.497-.736-1.756-.83a1.008 1.008 0 0 0-.34-.075c-.196 0-.362.098-.49.291-.146.217-.587.732-.723.886-.018.02-.042.045-.057.045-.013 0-.239-.093-.307-.123-1.564-.68-2.751-2.313-2.914-2.589-.023-.04-.024-.057-.024-.057.005-.021.058-.074.085-.101.08-.079.166-.182.249-.283l.117-.14c.121-.14.175-.25.237-.375l.033-.066a.68.68 0 0 0-.02-.64c-.034-.069-.65-1.555-.715-1.711-.158-.377-.366-.552-.655-.552-.027 0 0 0-.112.005-.137.005-.883.104-1.213.311-.35.22-.94.924-.94 2.16 0 1.112.705 2.162 1.008 2.561l.041.06c1.161 1.695 2.608 2.951 4.074 3.537 1.412.564 2.081.63 2.461.63.16 0 .288-.013.4-.024l.072-.007c.488-.043 1.56-.599 1.804-1.276.192-.534.243-1.117.115-1.329-.088-.144-.239-.216-.43-.308Z"/>
+        </svg>
+      </a>
+    </>
+  );
+}

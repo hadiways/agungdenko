@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  
+  --color-brand-blue: #084C8F;
+  --color-brand-blueDark: #063A70;
+  --color-brand-blueLight: #86A8BD;
+  --color-brand-darkBg: #0B1B2B;
+  --color-brand-darkCard: #122438;
+  --color-brand-accent: #2F80ED;
+  --color-brand-lightBg: #F3F6F9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* DWS Corporate B2B Custom Stylesheet */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0B1B2B;
+}
+::-webkit-scrollbar-thumb {
+    background: #084C8F;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #2F80ED;
+}
+
+/* Custom Glassmorphism style */
+.glassmorphic {
+    background: rgba(18, 36, 56, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom floating animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Custom bounce animation */
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+.animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+}
+
+/* Hide scrollbars for snap scrolling testimonial bar */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Active SVG styling overrides */
+.benefit-card:hover svg {
+    color: white !important;
+}
+.benefit-card:hover svg path, .benefit-card:hover svg circle {
+    stroke: white !important;
+}

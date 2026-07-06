@@ -13,12 +13,12 @@ www.agungdenko.asia {
 
 # Frontend - Static HTML
 agungdenko.asia {
-	root * /opt/dws-portal/dws-nextjs
+	root * /opt/dws-portal/dws-nextjs/out
 
 	file_server
 
-	# Fallback ke index.html
-	try_files {path} /index.html
+	# Fallback ke Next.js routes
+	try_files {path} {path}.html {path}/index.html /index.html
 
 	# Cache asset statis 30 hari
 	@static path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.webp
@@ -75,6 +75,18 @@ api.agungdenko.asia {
 
 	log {
 		output file /var/log/caddy/api-agungdenko-access.log
+		format json
+	}
+}
+
+# Sanity Studio CMS - Editor Dashboard
+cms.agungdenko.asia {
+	root * /opt/dws-portal/studio/dist
+	file_server
+	try_files {path} {path}/ /index.html
+	encode gzip
+	log {
+		output file /var/log/caddy/cms-agungdenko-access.log
 		format json
 	}
 }

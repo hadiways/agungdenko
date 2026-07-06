@@ -1,4 +1,4 @@
-const PARTNERS_DATA = [
+export const PARTNERS_DATA = [
   { name: "Noblelift" },
   { name: "HELI" },
   { name: "MIMA" },

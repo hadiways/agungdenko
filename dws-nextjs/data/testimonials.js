@@ -1,4 +1,4 @@
-const TESTIMONIALS_DATA = [
+export const TESTIMONIALS_DATA = [
   {
     company: "PT Sumber Makmur",
     comment: "Pelayanan sangat memuaskan, unit berkualitas dan sesuai kebutuhan kami. After sales juga sangat membantu.",

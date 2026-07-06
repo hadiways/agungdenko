@@ -1,0 +1,16 @@
+{
+  "name": "dws-sanity-studio",
+  "private": true,
+  "version": "1.0.0",
+  "main": "package.json",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build"
+  },
+  "dependencies": {
+    "sanity": "^3.51.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "styled-components": "^6.1.11"
+  }
+}
