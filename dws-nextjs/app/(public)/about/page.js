@@ -21,7 +21,7 @@ export default function AboutPage() {
           {/* Visual */}
           <div className="relative">
             <div className="overflow-hidden rounded-3xl aspect-[4/3] shadow-xl border border-gray-100 relative group">
-              <img src="/images/office.jpg" alt="Office building" className="w-full h-full object-cover" />
+              <img src="/images/office-dws.jpg" alt="Office building" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-brand-darkBg/10"></div>
             </div>
             <div className="absolute -bottom-6 -right-6 bg-brand-blue text-white p-6 rounded-2xl shadow-xl max-w-xs border border-brand-blueLight/20 hidden sm:block">

@@ -569,7 +569,7 @@ export default function Home() {
           <div className="bg-brand-lightBg rounded-3xl p-6 sm:p-8 shadow-xl border border-blue-100/50 flex flex-col justify-between">
             <div>
               <div className="overflow-hidden rounded-2xl mb-8 aspect-video relative group shadow-sm">
-                <img src="/images/office.jpg" alt="Office PT Denko Wahana Sakti" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" />
+                <img src="/images/office-dws.jpg" alt="Office PT Denko Wahana Sakti" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <span className="absolute bottom-4 left-4 text-white font-bold text-sm tracking-wide bg-brand-blue px-3 py-1 rounded">HEADQUARTERS</span>
               </div>
