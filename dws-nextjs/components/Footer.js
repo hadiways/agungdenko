@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { sanityFetch } from "@/lib/sanity/fetch";
+import scrapedProducts from "@/data/scraped_products.json";
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -20,6 +21,24 @@ export default function Footer() {
     email: "agung.ramdhani@denkowahanasakti.co.id",
     avatar: ""
   });
+
+  const [productList, setProductList] = useState([]);
+
+  useEffect(() => {
+    const baseProducts = scrapedProducts || [];
+    const saved = localStorage.getItem("custom_products");
+    if (saved) {
+      try {
+        const custom = JSON.parse(saved);
+        setProductList([...custom, ...baseProducts]);
+      } catch (e) {
+        console.error("Failed to parse custom products for footer", e);
+        setProductList(baseProducts);
+      }
+    } else {
+      setProductList(baseProducts);
+    }
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("sales_profile");
@@ -211,12 +230,11 @@ Berikut detail kebutuhan saya:
             <div>
               <select id="product" value={formData.product} onChange={handleChange} className="w-full bg-brand-darkBg border border-white/10 rounded-lg px-3 py-2.5 text-white text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all">
                 <option value="" disabled>Produk yang Diminati</option>
-                <option value="Forklift Electric">Forklift Electric</option>
-                <option value="Forklift Diesel">Forklift Diesel</option>
-                <option value="Reach Truck">Reach Truck</option>
-                <option value="Electric Stacker">Electric Stacker</option>
-                <option value="Hand Pallet">Hand Pallet</option>
-                <option value="Scissor Lift">Scissor Lift</option>
+                {productList && productList.map((p) => (
+                  <option key={p.id} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
                 <option value="Lainnya / Konsultasi">Lainnya / Konsultasi</option>
               </select>
             </div>

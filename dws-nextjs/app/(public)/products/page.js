@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import scrapedProducts from "@/data/scraped_products.json";
 import { Package, Wrench, Disc, Wind, Grid } from "lucide-react";
 
@@ -112,19 +113,26 @@ export default function ProductsPage() {
 
               return displayed.map((p) => (
                 <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
-                  <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
+                  <Link 
+                    href={`/products/${p.slug}`} 
+                    className="cursor-pointer block relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner"
+                  >
                     <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
                       {p.category}
                     </div>
-                  </div>
+                  </Link>
                   <div>
-                    <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
+                    <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">
+                      <Link href={`/products/${p.slug}`} className="hover:text-brand-blue transition-colors">
+                        {p.name}
+                      </Link>
+                    </h3>
                     <p className="text-gray-600 text-xs mb-6 leading-relaxed line-clamp-3">{p.description}</p>
                   </div>
-                  <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
-                    Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
-                  </button>
+                  <Link href={`/products/${p.slug}`} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start cursor-pointer">
+                    Lihat Detail <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
+                  </Link>
                 </div>
               ));
             })()}

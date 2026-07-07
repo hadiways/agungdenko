@@ -12,7 +12,44 @@ import {
 } from "@/lib/sanity/queries";
 import scrapedProducts from "@/data/scraped_products.json";
 import HeroIndustryRotator from "@/components/HeroIndustryRotator";
+import ProductCarousel from "@/components/ProductCarousel";
 import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare, Wrench, Disc, Wind, Grid, Search } from "lucide-react";
+
+// Category details for descriptions and quick links
+const CATEGORY_DETAILS = {
+  "Material Handling": {
+    desc: "Peralatan pemindahan beban berat industri dan pergudangan berkualitas tinggi dengan standar hidrolik presisi.",
+    href: "/products?cat=Material%20Handling"
+  },
+  "Dalton Hardware Tools": {
+    desc: "Perkakas kerja, tangga lipat aluminium premium, mesin las, serta tong sampah industri bermutu tinggi.",
+    href: "/products?cat=Dalton%20Hardware%20Tools"
+  },
+  "Castor Wheel Division": {
+    desc: "Berbagai macam roda kastor trolley untuk kebutuhan beban ringan, sedang, hingga heavy-duty industrial.",
+    href: "/products?cat=Castor%20Wheel%20Division"
+  },
+  "Turbin Ventilator": {
+    desc: "Sistem sirkulasi udara tangguh berbahan stainless steel untuk pabrik, gudang, dan gedung industri.",
+    href: "/products?cat=Turbin%20Ventilator"
+  }
+};
+
+// Helper function to extract brand from name or description
+const getProductBrand = (product) => {
+  const name = (product.name || "").toLowerCase();
+  const desc = (product.description || "").toLowerCase();
+  if (name.includes("dalton") || desc.includes("dalton")) return "Dalton";
+  if (name.includes("noblelift") || desc.includes("noblelift")) return "Noblelift";
+  if (name.includes("nansin") || desc.includes("nansin")) return "Nansin";
+  if (name.includes("vmax") || desc.includes("vmax")) return "VMAX";
+  if (name.includes("nippon") || desc.includes("nippon")) return "Nippon";
+  if (name.includes("star rollen") || desc.includes("star rollen")) return "Star Rollen";
+  if (name.includes("sumo") || desc.includes("sumo")) return "Sumo Caster";
+  if (name.includes("stg") || desc.includes("stg")) return "STG";
+  if (name.includes("triple s") || desc.includes("triple s")) return "Triple S";
+  return null;
+};
 
 export default function Home() {
   const scrollRef = useRef(null);
@@ -78,11 +115,11 @@ export default function Home() {
     async function fetchCMSData() {
       try {
         const [cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery] = await Promise.all([
-          sanityFetch(SERVICES_QUERY),
-          sanityFetch(TESTIMONIALS_QUERY),
-          sanityFetch(PARTNERS_QUERY),
-          sanityFetch(FEATURES_QUERY),
-          sanityFetch(GALLERY_QUERY)
+          sanityFetch(SERVICES_QUERY).catch((err) => { console.warn("Failed to fetch CMS services", err); return []; }),
+          sanityFetch(TESTIMONIALS_QUERY).catch((err) => { console.warn("Failed to fetch CMS testimonials", err); return []; }),
+          sanityFetch(PARTNERS_QUERY).catch((err) => { console.warn("Failed to fetch CMS partners", err); return []; }),
+          sanityFetch(FEATURES_QUERY).catch((err) => { console.warn("Failed to fetch CMS features", err); return []; }),
+          sanityFetch(GALLERY_QUERY).catch((err) => { console.warn("Failed to fetch CMS gallery", err); return []; })
         ]);
 
         const baseProducts = scrapedProducts || [];
@@ -129,10 +166,22 @@ export default function Home() {
 
         // 6. Products
         const savedProducts = localStorage.getItem("custom_products");
+        console.log("DEBUG: scrapedProducts raw:", scrapedProducts ? scrapedProducts.length : "null");
+        console.log("DEBUG: baseProducts:", baseProducts.length);
+        console.log("DEBUG: savedProducts from localStorage:", savedProducts);
         if (savedProducts) {
-          try { setProducts([...JSON.parse(savedProducts), ...baseProducts]); }
-          catch (e) { setProducts(baseProducts); }
-        } else { setProducts(baseProducts); }
+          try { 
+            const parsed = JSON.parse(savedProducts);
+            console.log("DEBUG: parsed custom_products:", parsed.length);
+            setProducts([...parsed, ...baseProducts]); 
+          }
+          catch (e) { 
+            console.error("DEBUG: Failed to parse custom_products", e);
+            setProducts(baseProducts); 
+          }
+        } else { 
+          setProducts(baseProducts); 
+        }
       } catch (err) {
         console.error("Failed to fetch CMS content", err);
       }
@@ -405,30 +454,34 @@ export default function Home() {
               <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Pilihan Terbaik</span>
               <h2 className="text-brand-darkBg font-display font-extrabold text-3xl md:text-4xl">Produk Kami</h2>
               <p className="text-gray-500 mt-2 max-w-2xl text-sm sm:text-base">
-                Berbagai pilihan material handling berkualitas tinggi untuk mendukung kebutuhan industri dan pergudangan Anda.
+                Jelajahi produk kami berdasarkan kategori divisi divisi di bawah ini untuk kebutuhan bisnis dan industri Anda.
               </p>
             </div>
-            <Link href="/products" className="mt-4 md:mt-0 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-lg active:scale-95 transition-all duration-150 self-start md:self-auto">
-              Lihat Semua Produk
-            </Link>
           </div>
 
-          <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="space-y-16">
             {(() => {
-              const displayed = products
+              const categoriesList = [
+                "Material Handling",
+                "Dalton Hardware Tools",
+                "Castor Wheel Division",
+                "Turbin Ventilator"
+              ];
+
+              const filteredProducts = products
                 .filter((p) => {
-                  // Category filter
+                  // Category Tab Filter
                   if (selectedCategory !== "Semua" && p.category !== selectedCategory) {
                     return false;
                   }
-                  // Search query filter (matches name or description)
+                  // Search Input Filter
                   if (searchQuery) {
                     const term = searchQuery.toLowerCase();
                     const nameMatch = p.name && p.name.toLowerCase().includes(term);
                     const descMatch = p.description && p.description.toLowerCase().includes(term);
                     if (!nameMatch && !descMatch) return false;
                   }
-                  // Brand filter
+                  // Brand Filter
                   if (selectedBrand !== "Semua Merek") {
                     const brandTerm = selectedBrand.toLowerCase();
                     const nameMatch = p.name && p.name.toLowerCase().includes(brandTerm);
@@ -446,32 +499,64 @@ export default function Home() {
                   }
                   return 0; // default
                 });
-              
-              if (!displayed || displayed.length === 0) {
+
+              const groupedProducts = {};
+              categoriesList.forEach((cat) => {
+                groupedProducts[cat] = filteredProducts.filter((p) => p.category === cat);
+              });
+
+              const activeCategories = categoriesList.filter(
+                (cat) => groupedProducts[cat] && groupedProducts[cat].length > 0
+              );
+
+              if (activeCategories.length === 0) {
                 return (
-                  <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                  <div className="text-center text-gray-500 py-12 text-sm bg-white rounded-3xl p-8 border border-blue-100/50 shadow-sm">
                     Tidak ada produk yang sesuai dengan kriteria filter Anda.
                   </div>
                 );
               }
 
-              return displayed.map((p) => (
-                <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
-                  <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
-                    <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                    <div className="absolute top-3 left-3 bg-brand-blue text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-blueLight/20">
-                      {p.category}
+              return activeCategories.map((cat) => {
+                const catProducts = groupedProducts[cat];
+                const displayProducts = catProducts.slice(0, 8); // Display first 8 products in carousel
+                const details = CATEGORY_DETAILS[cat] || { desc: "", href: "/products" };
+
+                return (
+                  <div key={cat} className="space-y-6">
+                    {/* Category Title Header Block */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-brand-blueLight/10 pb-4">
+                      <div className="space-y-1 max-w-2xl">
+                        <h3 className="text-brand-darkBg font-display font-extrabold text-xl sm:text-2xl flex items-center gap-2">
+                          <span>{cat}</span>
+                          <span className="bg-brand-blue/10 text-brand-blue text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+                            {catProducts.length} Produk
+                          </span>
+                        </h3>
+                        {details.desc && (
+                          <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">
+                            {details.desc}
+                          </p>
+                        )}
+                      </div>
+                      <Link
+                        href={details.href}
+                        className="text-brand-blue hover:text-brand-blueDark font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors mt-3 md:mt-0 cursor-pointer"
+                      >
+                        <span>Lihat Semua</span>
+                        <ArrowRight size={14} />
+                      </Link>
                     </div>
+
+                    {/* Horizontal Carousel */}
+                    <ProductCarousel
+                      products={displayProducts}
+                      triggerSelectProduct={triggerSelectProduct}
+                      getProductBrand={getProductBrand}
+                    />
                   </div>
-                  <div>
-                    <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
-                    <p className="text-gray-600 text-xs mb-6 leading-relaxed line-clamp-3">{p.description}</p>
-                  </div>
-                  <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
-                    Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
-                  </button>
-                </div>
-              ));
+                );
+              });
             })()}
           </div>
         </div>
