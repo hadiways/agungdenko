@@ -12,7 +12,7 @@ export default function PublicLayout({ children }) {
 
       {/* Floating WhatsApp Button */}
       <a 
-        href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti." 
+        href="https://wa.me/6285784380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti." 
         target="_blank" 
         rel="noopener noreferrer" 
         className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center animate-bounce-slow" 

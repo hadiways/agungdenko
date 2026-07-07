@@ -26,7 +26,7 @@ export default function AboutPage() {
             </div>
             <div className="absolute -bottom-6 -right-6 bg-brand-blue text-white p-6 rounded-2xl shadow-xl max-w-xs border border-brand-blueLight/20 hidden sm:block">
               <span className="font-display font-bold text-2xl block">Distributor Resmi</span>
-              <span className="text-xs text-gray-200 mt-1 block">Jaringan servis, rental, & sparepart di seluruh Indonesia.</span>
+              <span className="text-xs text-gray-200 mt-1 block">Jaringan servis & sparepart di seluruh Indonesia.</span>
             </div>
           </div>
 

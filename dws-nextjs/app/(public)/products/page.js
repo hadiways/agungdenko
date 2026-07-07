@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { sanityFetch } from "@/lib/sanity/fetch";
-import { PRODUCTS_QUERY } from "@/lib/sanity/queries";
+import scrapedProducts from "@/data/scraped_products.json";
+import { Package, Wrench, Disc, Wind, Grid } from "lucide-react";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
 
   useEffect(() => {
     async function loadProducts() {
       try {
-        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
-        const baseProducts = cmsProducts || [];
+        const baseProducts = scrapedProducts || [];
 
         const saved = localStorage.getItem("custom_products");
         if (saved) {
@@ -26,10 +26,19 @@ export default function ProductsPage() {
           setProducts(baseProducts);
         }
       } catch (err) {
-        console.error("Failed to load products from CMS", err);
+        console.error("Failed to load products", err);
       }
     }
     loadProducts();
+
+    // Check for category query parameter in URL
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get("cat");
+      if (cat) {
+        setSelectedCategory(cat);
+      }
+    }
   }, []);
 
   const triggerSelectProduct = (productName) => {
@@ -47,12 +56,61 @@ export default function ProductsPage() {
         </div>
       </section>
 
+      {/* Category Filter Bar */}
+      <section className="py-8 bg-brand-lightBg px-6 border-b border-brand-blueLight/10">
+        <div className="container mx-auto">
+          <div className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 overflow-x-auto pb-3 md:pb-0 scrollbar-none snap-x">
+            {[
+              { name: "Semua", icon: <Grid size={16} /> },
+              { name: "Material Handling", icon: <Package size={16} /> },
+              { name: "Dalton Hardware Tools", icon: <Wrench size={16} /> },
+              { name: "Castor Wheel Division", icon: <Disc size={16} /> },
+              { name: "Turbin Ventilator", icon: <Wind size={16} /> }
+            ].map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  // Update URL parameter without reloading
+                  if (typeof window !== "undefined") {
+                    const newUrl = cat.name === "Semua" 
+                      ? window.location.pathname 
+                      : `${window.location.pathname}?cat=${encodeURIComponent(cat.name)}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                  }
+                }}
+                className={`snap-align-start shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  selectedCategory === cat.name
+                    ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/30 scale-105"
+                    : "bg-white hover:bg-brand-lightBg text-brand-darkBg border border-brand-blueLight/10 hover:border-brand-blue/30 hover:text-brand-blue"
+                }`}
+              >
+                <span className={selectedCategory === cat.name ? "text-white" : "text-brand-blue"}>{cat.icon}</span>
+                <span>{cat.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Products Grid Section */}
       <section className="py-24 px-6 md:px-12 bg-white">
         <div className="container mx-auto">
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products && products.length > 0 ? (
-              products.map((p) => (
+            {(() => {
+              const displayed = selectedCategory === "Semua"
+                ? products
+                : products.filter(p => p.category === selectedCategory);
+              
+              if (!displayed || displayed.length === 0) {
+                return (
+                  <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                    Tidak ada produk yang tersedia dalam kategori ini.
+                  </div>
+                );
+              }
+
+              return displayed.map((p) => (
                 <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
                   <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
                     <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
@@ -62,18 +120,14 @@ export default function ProductsPage() {
                   </div>
                   <div>
                     <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
-                    <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
+                    <p className="text-gray-600 text-xs mb-6 leading-relaxed line-clamp-3">{p.description}</p>
                   </div>
                   <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
                     Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
                   </button>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500 py-12 text-sm">
-                Tidak ada produk yang tersedia.
-              </div>
-            )}
+              ));
+            })()}
           </div>
         </div>
       </section>

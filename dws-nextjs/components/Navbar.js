@@ -33,7 +33,9 @@ import {
   Flame,
   FileCheck2,
   Newspaper,
-  Award
+  Award,
+  Disc,
+  Wind
 } from "lucide-react";
 
 export default function Navbar() {
@@ -47,7 +49,7 @@ export default function Navbar() {
 
   const [salesProfile, setSalesProfile] = useState({
     name: "Agung Ramdhani",
-    phone: "6285724380347"
+    phone: "6285784380347"
   });
 
   useEffect(() => {
@@ -143,25 +145,22 @@ export default function Navbar() {
   };
 
   // Dropdown Content Data
-  const produkForklift = [
-    { name: "Forklift Diesel", href: "/products?cat=diesel", desc: "Tangguh untuk luar ruangan", icon: <Truck className="w-4 h-4 text-brand-blue" /> },
-    { name: "Forklift Electric", href: "/products?cat=electric", desc: "Ramah lingkungan & senyap", icon: <Cpu className="w-4 h-4 text-brand-blue" /> },
-    { name: "Reach Truck", href: "/products?cat=reach-truck", desc: "Sempurna untuk rak tinggi", icon: <Layers className="w-4 h-4 text-brand-blue" /> },
-    { name: "Stacker", href: "/products?cat=stacker", desc: "Efisien untuk lift beban sedang", icon: <Layers3 className="w-4 h-4 text-brand-blue" /> },
-    { name: "Hand Pallet", href: "/products?cat=hand-pallet", desc: "Solusi pemindah manual ekonomis", icon: <Layers className="w-4 h-4 text-brand-blue" /> },
+  const produkMaterialHandling = [
+    { name: "Forklift & Stacker", href: "/products?cat=Material%20Handling", desc: "Diesel, Electric, Manual & Semi Electric", icon: <Truck className="w-4 h-4 text-brand-blue" /> },
+    { name: "Hand Pallet & Truck", href: "/products?cat=Material%20Handling", desc: "Hand Pallet Dalton, Noblelift, Nansin, Trolly", icon: <Layers className="w-4 h-4 text-brand-blue" /> },
+    { name: "Lift Equipment / Tangga", href: "/products?cat=Material%20Handling", desc: "Scissor Lift, Boom Lift, AWP, Order Picker", icon: <Layers3 className="w-4 h-4 text-brand-blue" /> },
+    { name: "Drum Handler & Mesh", href: "/products?cat=Material%20Handling", desc: "Drum Gripper, Tipper, Stacker, Pallet Mesh", icon: <Settings className="w-4 h-4 text-brand-blue" /> },
   ];
 
   const produkLainnya = [
-    { name: "Scissor Lift", href: "/products?cat=scissor-lift", desc: "Akses ketinggian vertikal aman", icon: <HardHat className="w-4 h-4 text-brand-blue" /> },
-    { name: "Aerial Work Platform", href: "/products?cat=awp", desc: "Platform manlift fleksibel", icon: <HardHat className="w-4 h-4 text-brand-blue" /> },
-    { name: "Wheel Loader", href: "/products?cat=wheel-loader", desc: "Performa tinggi industri berat", icon: <Layers3 className="w-4 h-4 text-brand-blue" /> },
-    { name: "Towing Tractor", href: "/products?cat=tow-tractor", desc: "Menarik beban berat bandara/gudang", icon: <Truck className="w-4 h-4 text-brand-blue" /> },
-    { name: "Sparepart & Aksesoris", href: "/products?cat=spareparts", desc: "Suku cadang forklift orisinal", icon: <Settings className="w-4 h-4 text-brand-blue" /> },
+    { name: "Dalton Hardware Tools", href: "/products?cat=Dalton%20Hardware%20Tools", desc: "Dustbin (Tong Sampah), Tangga (Ladder)", icon: <HardHat className="w-4 h-4 text-brand-blue" /> },
+    { name: "Castor Wheel Division", href: "/products?cat=Castor%20Wheel%20Division", desc: "Roda Kastor Nansin, Nippon, Triple S, Sumo", icon: <Disc className="w-4 h-4 text-brand-blue" /> },
+    { name: "Turbin Ventilator", href: "/products?cat=Turbin%20Ventilator", desc: "Turbine Ventilator industri stainless", icon: <Wind className="w-4 h-4 text-brand-blue" /> },
+    { name: "Layanan & Sparepart", href: "/services/maintenance", desc: "Perbaikan & suku cadang orisinal", icon: <Settings className="w-4 h-4 text-brand-blue" /> },
   ];
 
   const layananLinks = [
     { name: "Sales (Penjualan)", href: "/services/sales", desc: "Forklift baru & bekas garansi resmi" },
-    { name: "Rental (Sewa)", href: "/services/rental", desc: "Sewa harian, bulanan & kontrak tahunan" },
     { name: "Service & Maintenance", href: "/services/maintenance", desc: "Perbaikan kerusakan unit cepat & presisi" },
     { name: "Preventive Maintenance", href: "/services/preventive", desc: "Servis berkala cegah downtime forklift" },
     { name: "Sparepart", href: "/services/sparepart", desc: "Penyediaan komponen orisinal lengkap" },
@@ -251,13 +250,13 @@ export default function Navbar() {
               className="absolute left-1/2 -translate-x-[40%] top-full mt-4 w-[850px] bg-[#0E1F30] border border-white/5 rounded-2xl p-6 shadow-2xl z-50 grid grid-cols-12 gap-6 animate-fade-in"
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              {/* Col 1: Forklifts */}
+              {/* Col 1: Material Handling */}
               <div className="col-span-4 space-y-4">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block border-b border-white/5 pb-2">
-                  FORKLIFT
+                  MATERIAL HANDLING
                 </span>
                 <div className="flex flex-col gap-3">
-                  {produkForklift.map((item, idx) => (
+                  {produkMaterialHandling.map((item, idx) => (
                     <Link 
                       key={idx} 
                       href={item.href} 
@@ -283,7 +282,7 @@ export default function Navbar() {
               {/* Col 2: Other Equipment */}
               <div className="col-span-4 space-y-4">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block border-b border-white/5 pb-2">
-                  PRODUK LAINNYA
+                  DIVISI LAINNYA
                 </span>
                 <div className="flex flex-col gap-3">
                   {produkLainnya.map((item, idx) => (
@@ -325,7 +324,7 @@ export default function Navbar() {
                 </div>
                 <div className="pt-6 relative z-10">
                   <a
-                    href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti." 
+                    href="https://wa.me/6285784380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20tertarik%20dengan%20produk%20material%20handling%20dari%20PT%20Denko%20Wahana%20Sakti." 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-md"
@@ -531,14 +530,14 @@ export default function Navbar() {
               </button>
               {mobileExpanded['produk'] && (
                 <div className="mt-3 pl-3 flex flex-col gap-3 animate-fade-in">
-                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">FORKLIFT</div>
-                  {produkForklift.map((item, idx) => (
+                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">MATERIAL HANDLING</div>
+                  {produkMaterialHandling.map((item, idx) => (
                     <Link key={idx} href={item.href} onClick={handleLinkClick} className="text-xs text-gray-300 hover:text-white flex items-center gap-2">
                       {item.icon}
                       <span>{item.name}</span>
                     </Link>
                   ))}
-                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">PRODUK LAINNYA</div>
+                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">DIVISI LAINNYA</div>
                   {produkLainnya.map((item, idx) => (
                     <Link key={idx} href={item.href} onClick={handleLinkClick} className="text-xs text-gray-300 hover:text-white flex items-center gap-2">
                       {item.icon}
@@ -641,7 +640,7 @@ export default function Navbar() {
             </a>
             
             <a 
-              href="https://wa.me/6285724380347?text=Halo%20Sales%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20berkonsultasi."
+              href="https://wa.me/6285784380347?text=Halo%20Sales%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20berkonsultasi."
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-[#1F2F3E] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider"

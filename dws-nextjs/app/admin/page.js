@@ -23,7 +23,7 @@ export default function AdminDashboard() {
   const [salesForm, setSalesForm] = useState({
     name: "Agung Ramdhani",
     role: "Sales Consultant",
-    phone: "6285724380347",
+    phone: "6285784380347",
     status: "Online sekarang",
     avatar: ""
   });
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
       const defaultProfile = {
         name: "Agung Ramdhani",
         role: "Sales Consultant",
-        phone: "6285724380347",
+        phone: "6285784380347",
         status: "Online sekarang",
         avatar: ""
       };
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
                     id="phone"
                     value={salesForm.phone}
                     onChange={handleTextChange}
-                    placeholder="Contoh: 6285724380347"
+                    placeholder="Contoh: 6285784380347"
                     required
                     className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue transition-all"
                   />

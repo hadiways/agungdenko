@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { sanityFetch } from "@/lib/sanity/fetch";
 import { 
-  PRODUCTS_QUERY, 
   SERVICES_QUERY, 
   TESTIMONIALS_QUERY, 
   PARTNERS_QUERY,
   FEATURES_QUERY,
   GALLERY_QUERY
 } from "@/lib/sanity/queries";
+import scrapedProducts from "@/data/scraped_products.json";
 import HeroIndustryRotator from "@/components/HeroIndustryRotator";
-import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare } from "lucide-react";
+import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare, Wrench, Disc, Wind, Grid, Search } from "lucide-react";
 
 export default function Home() {
   const scrollRef = useRef(null);
@@ -20,7 +20,7 @@ export default function Home() {
   const [salesProfile, setSalesProfile] = useState({
     name: "Agung Ramdhani",
     role: "Sales Consultant",
-    phone: "6285724380347",
+    phone: "6285784380347",
     status: "Online sekarang",
     avatar: ""
   });
@@ -30,6 +30,21 @@ export default function Home() {
   const [partners, setPartners] = useState([]);
   const [features, setFeatures] = useState([]);
   const [galleryItems, setGalleryItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tempSearchQuery, setTempSearchQuery] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("Semua Merek");
+  const [selectedSort, setSelectedSort] = useState("default");
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    setSearchQuery(tempSearchQuery);
+  };
+
+  const handleTagClick = (tagText) => {
+    setTempSearchQuery(tagText);
+    setSearchQuery(tagText);
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,8 +77,7 @@ export default function Home() {
     // Load dynamic CMS and local custom data
     async function fetchCMSData() {
       try {
-        const [cmsProducts, cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery] = await Promise.all([
-          sanityFetch(PRODUCTS_QUERY),
+        const [cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery] = await Promise.all([
           sanityFetch(SERVICES_QUERY),
           sanityFetch(TESTIMONIALS_QUERY),
           sanityFetch(PARTNERS_QUERY),
@@ -71,7 +85,7 @@ export default function Home() {
           sanityFetch(GALLERY_QUERY)
         ]);
 
-        const baseProducts = cmsProducts || [];
+        const baseProducts = scrapedProducts || [];
         const baseServices = cmsServices || [];
         const baseTestimonials = cmsTestimonials || [];
         const basePartners = cmsPartners || [];
@@ -195,7 +209,7 @@ export default function Home() {
             
             {/* Description */}
             <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
-              Kami menyediakan penjualan, rental, service, dan sparepart forklift dengan kualitas terbaik dan layanan profesional.
+              Kami menyediakan penjualan, service, dan sparepart forklift dengan kualitas terbaik dan layanan profesional.
             </p>
 
             {/* Trust Indicators (One horizontal row, compact badges with small Lucide icons) */}
@@ -277,38 +291,115 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. Feature Bar */}
-      <section className="relative z-20 px-6 md:px-12 -mt-10 md:-mt-16">
+      {/* 3. Produk Kami (with overlapping Search & Filter Widget) */}
+      <section id="produk" className="py-24 bg-brand-lightBg px-6 md:px-12 fade-in-on-scroll relative z-20">
         <div className="container mx-auto">
-          <div id="benefit-bar" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 bg-white rounded-2xl p-6 md:p-8 shadow-2xl border border-blue-100">
-            {features && features.length > 0 ? (
-              features.map((b, idx) => (
-                <div key={b._id || idx} className="benefit-card flex flex-col items-center text-center p-3 group hover:scale-105 transition-all duration-300">
-                  <div className="w-12 h-12 rounded-full bg-brand-lightBg flex items-center justify-center mb-4 group-hover:bg-brand-blue transition-colors duration-300 shadow-sm shadow-brand-blue/5">
-                    {b.icon && b.icon.startsWith("<svg") ? (
-                      <div dangerouslySetInnerHTML={{ __html: b.icon }} />
-                    ) : b.icon ? (
-                      <img src={b.icon} alt={b.title} className="w-6 h-6 object-contain" />
-                    ) : (
-                      <span className="text-brand-blue font-bold text-xs">★</span>
-                    )}
-                  </div>
-                  <h4 className="text-brand-darkBg font-semibold text-xs leading-snug group-hover:text-brand-blue transition-colors duration-200">{b.title}</h4>
-                  <p className="text-gray-500 text-[10px] mt-1.5 leading-normal hidden lg:block">{b.description}</p>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500 py-6 text-xs font-semibold">
-                No features available.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+          
+          {/* Product Search & Filter Widget (Hunivest UX) */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-blue-100/50 max-w-5xl mx-auto flex flex-col gap-6 -mt-36 md:-mt-44 mb-16 relative z-30">
+            
+            {/* Tabs at the top */}
+            <div className="flex gap-6 border-b border-gray-100 pb-3 overflow-x-auto scrollbar-none">
+              {[
+                { name: "Semua", icon: <Grid size={16} /> },
+                { name: "Material Handling", icon: <Package size={16} /> },
+                { name: "Dalton Hardware Tools", icon: <Wrench size={16} /> },
+                { name: "Castor Wheel Division", icon: <Disc size={16} /> },
+                { name: "Turbin Ventilator", icon: <Wind size={16} /> }
+              ].map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`flex items-center gap-2 pb-3 -mb-[13px] px-1 text-xs font-bold uppercase tracking-wider transition-all duration-200 shrink-0 border-b-2 ${
+                    selectedCategory === cat.name
+                      ? "border-brand-blue text-brand-blue"
+                      : "border-transparent text-gray-400 hover:text-brand-blue"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </button>
+              ))}
+            </div>
 
-      {/* 4. Produk Kami */}
-      <section id="produk" className="py-24 bg-brand-lightBg px-6 md:px-12 fade-in-on-scroll">
-        <div className="container mx-auto">
+            {/* Main search & filter form */}
+            <form onSubmit={handleSearch} className="flex flex-col lg:flex-row items-center gap-4 bg-gray-50/50 p-2 rounded-2xl border border-gray-100/50">
+              {/* Text Search Input */}
+              <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3.5 flex-1 w-full shadow-sm">
+                <Search size={18} className="text-gray-400" />
+                <input
+                  type="text"
+                  value={tempSearchQuery}
+                  onChange={(e) => setTempSearchQuery(e.target.value)}
+                  placeholder="Cari nama atau deskripsi produk..."
+                  className="bg-transparent text-xs text-brand-darkBg placeholder-gray-400 w-full focus:outline-none"
+                />
+              </div>
+
+              {/* Brand Select Dropdown */}
+              <div className="flex flex-col bg-white border border-gray-100 rounded-xl px-4 py-2 w-full lg:w-48 shrink-0 shadow-sm">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Merek</span>
+                <select
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-brand-darkBg focus:outline-none w-full cursor-pointer mt-0.5"
+                >
+                  <option value="Semua Merek">Semua Merek</option>
+                  <option value="Dalton">Dalton</option>
+                  <option value="Noblelift">Noblelift</option>
+                  <option value="Nansin">Nansin</option>
+                  <option value="VMAX">VMAX</option>
+                  <option value="Nippon">Nippon</option>
+                  <option value="Triple S">Triple S</option>
+                </select>
+              </div>
+
+              {/* Sorting Select Dropdown */}
+              <div className="flex flex-col bg-white border border-gray-100 rounded-xl px-4 py-2 w-full lg:w-44 shrink-0 shadow-sm">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Urutkan</span>
+                <select
+                  value={selectedSort}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-brand-darkBg focus:outline-none w-full cursor-pointer mt-0.5"
+                >
+                  <option value="default">Default</option>
+                  <option value="asc">Nama A-Z</option>
+                  <option value="desc">Nama Z-A</option>
+                </select>
+              </div>
+
+              {/* Cyan Search Button */}
+              <button
+                type="submit"
+                className="w-full lg:w-auto bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-4 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-brand-blue/15 hover:shadow-brand-blue/30 active:scale-95 transition-all shrink-0 cursor-pointer"
+              >
+                <Search size={14} />
+                <span>Cari</span>
+              </button>
+            </form>
+
+            {/* Popular searches */}
+            <div className="flex flex-wrap items-center gap-2.5 text-[11px]">
+              <span className="text-gray-400 font-bold uppercase tracking-wider">Pencarian Populer:</span>
+              {[
+                "Forklift Diesel",
+                "Scissor Lift",
+                "Roda Kastor",
+                "Hand Pallet Dalton",
+                "Turbin Ventilator"
+              ].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleTagClick(tag)}
+                  className="bg-brand-lightBg hover:bg-brand-blue/10 text-brand-darkBg hover:text-brand-blue border border-gray-100 rounded-lg px-3 py-1 font-bold transition-all duration-200 cursor-pointer"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
               <span className="text-brand-blue font-bold text-sm uppercase tracking-wider block mb-2">Pilihan Terbaik</span>
@@ -323,8 +414,48 @@ export default function Home() {
           </div>
 
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products && products.length > 0 ? (
-              products.map((p) => (
+            {(() => {
+              const displayed = products
+                .filter((p) => {
+                  // Category filter
+                  if (selectedCategory !== "Semua" && p.category !== selectedCategory) {
+                    return false;
+                  }
+                  // Search query filter (matches name or description)
+                  if (searchQuery) {
+                    const term = searchQuery.toLowerCase();
+                    const nameMatch = p.name && p.name.toLowerCase().includes(term);
+                    const descMatch = p.description && p.description.toLowerCase().includes(term);
+                    if (!nameMatch && !descMatch) return false;
+                  }
+                  // Brand filter
+                  if (selectedBrand !== "Semua Merek") {
+                    const brandTerm = selectedBrand.toLowerCase();
+                    const nameMatch = p.name && p.name.toLowerCase().includes(brandTerm);
+                    const descMatch = p.description && p.description.toLowerCase().includes(brandTerm);
+                    if (!nameMatch && !descMatch) return false;
+                  }
+                  return true;
+                })
+                .sort((a, b) => {
+                  if (selectedSort === "asc") {
+                    return a.name.localeCompare(b.name);
+                  }
+                  if (selectedSort === "desc") {
+                    return b.name.localeCompare(a.name);
+                  }
+                  return 0; // default
+                });
+              
+              if (!displayed || displayed.length === 0) {
+                return (
+                  <div className="col-span-full text-center text-gray-500 py-12 text-sm">
+                    Tidak ada produk yang sesuai dengan kriteria filter Anda.
+                  </div>
+                );
+              }
+
+              return displayed.map((p) => (
                 <div key={p.id} className="group bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
                   <div className="relative overflow-hidden rounded-2xl bg-white mb-5 aspect-[4/3] flex items-center justify-center p-6 border border-brand-blueLight/10 shadow-inner">
                     <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
@@ -334,18 +465,14 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="text-brand-darkBg font-display font-bold text-lg mb-1 group-hover:text-brand-blue transition-colors duration-200">{p.name}</h3>
-                    <p className="text-gray-600 text-xs mb-6 leading-relaxed">{p.description}</p>
+                    <p className="text-gray-600 text-xs mb-6 leading-relaxed line-clamp-3">{p.description}</p>
                   </div>
                   <button onClick={() => triggerSelectProduct(p.name)} className="text-brand-blue font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 group/btn hover:text-brand-accent transition-colors mt-auto self-start">
                     Minta Penawaran <span className="transform group-hover/btn:translate-x-1 transition-transform duration-200">&rarr;</span>
                   </button>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500 py-12 text-sm">
-                Tidak ada produk yang tersedia.
-              </div>
-            )}
+              ));
+            })()}
           </div>
         </div>
       </section>
@@ -417,7 +544,7 @@ export default function Home() {
                   <p className="text-gray-400 text-xs">Konsultasikan kebutuhan unit Anda sekarang.</p>
                 </div>
               </div>
-              <a href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20terkait%20kebutuhan%20material%20handling." target="_blank" rel="noopener noreferrer" className="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
+              <a href="https://wa.me/6285784380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20terkait%20kebutuhan%20material%20handling." target="_blank" rel="noopener noreferrer" className="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
                 Tanya Sales
               </a>
             </div>

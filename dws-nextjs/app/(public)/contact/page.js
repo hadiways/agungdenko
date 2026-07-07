@@ -6,8 +6,8 @@ export const metadata = {
 };
 
 export default function ContactPage() {
-  const waNumber = "6285724380347";
-  const displayPhone = "0857-2438-0347";
+  const waNumber = "6285784380347";
+  const displayPhone = "0857-8438-0347";
 
   return (
     <>

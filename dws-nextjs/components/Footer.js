@@ -16,7 +16,7 @@ export default function Footer() {
   const [salesProfile, setSalesProfile] = useState({
     name: "Agung Ramdhani",
     role: "Sales Executive - PT Denko Wahana Sakti",
-    phone: "6285724380347",
+    phone: "6285784380347",
     email: "agung.ramdhani@denkowahanasakti.co.id",
     avatar: ""
   });
@@ -246,7 +246,6 @@ Berikut detail kebutuhan saya:
           <h4 className="text-white font-bold mb-3 uppercase tracking-wider">Layanan</h4>
           <ul className="space-y-2">
             <li><a href="/services/sales" className="hover:text-brand-blueLight transition-colors">Sales (Penjualan)</a></li>
-            <li><a href="/services/rental" className="hover:text-brand-blueLight transition-colors">Rental (Sewa)</a></li>
             <li><a href="/services/maintenance" className="hover:text-brand-blueLight transition-colors">Service & Maintenance</a></li>
             <li><a href="/services/sparepart" className="hover:text-brand-blueLight transition-colors">Suku Cadang</a></li>
           </ul>

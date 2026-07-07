@@ -178,7 +178,7 @@ export default async function ResourcesDetailPage({ params }) {
             </p>
             
             <a
-              href="https://wa.me/6285724380347?text=Halo%20Admin%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20meminta%20berkas%20mengenai%20katalog/brosur/faq."
+              href="https://wa.me/6285784380347?text=Halo%20Admin%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20meminta%20berkas%20mengenai%20katalog/brosur/faq."
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-md"

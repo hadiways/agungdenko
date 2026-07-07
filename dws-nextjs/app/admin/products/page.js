@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { sanityFetch } from "@/lib/sanity/fetch";
-import { PRODUCTS_QUERY } from "@/lib/sanity/queries";
+import scrapedProducts from "@/data/scraped_products.json";
 import { UploadCloud, Trash2 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -28,12 +27,11 @@ export default function AdminProductsPage() {
     image: "",
   });
 
-  // Load custom products, categories from localStorage and default products from Sanity CMS on mount
+  // Load custom products, categories from localStorage and default products from scraped products JSON on mount
   useEffect(() => {
     async function loadAllProducts() {
       try {
-        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
-        const baseProducts = cmsProducts || [];
+        const baseProducts = scrapedProducts || [];
 
         const saved = localStorage.getItem("custom_products");
         if (saved) {

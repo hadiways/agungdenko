@@ -404,7 +404,7 @@ export default async function ArticleDetailPage({ params }) {
                 </div>
                 <div className="relative z-10 pt-4">
                   <a
-                    href="https://wa.me/6285724380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20forklift%20perusahaan%20saya."
+                    href="https://wa.me/6285784380347?text=Halo%20Pak%20Agung%20Ramdhani,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20forklift%20perusahaan%20saya."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-white hover:bg-gray-100 text-brand-darkBg font-bold text-xs py-3 rounded-xl flex items-center justify-center transition-all shadow-md shadow-black/10"

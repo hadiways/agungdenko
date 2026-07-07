@@ -28,19 +28,7 @@ const SERVICES_CONTENT = {
     ],
     ctaText: "Minta Brosur Penjualan"
   },
-  "rental": {
-    title: "Layanan Penyewaan Forklift (Rental)",
-    subtitle: "Skema Sewa Harian, Bulanan, & Kontrak Jangka Panjang Tanpa Ribet",
-    desc: "Dukung produktivitas bisnis Anda tanpa perlu mengkhawatirkan biaya investasi aset tinggi. Kami menyediakan armada forklift sewa termuda dengan kondisi prima.",
-    icon: <Layers className="w-12 h-12 text-brand-blue" />,
-    features: [
-      "Pilihan kapasitas angkat terlengkap mulai dari 1.5 Ton hingga 25 Ton.",
-      "Bebas biaya perawatan dan perbaikan unit (semua ditanggung oleh teknisi DWS).",
-      "Unit pengganti (back-up unit) siap kirim dalam 24 jam jika terjadi kendala operasional.",
-      "Opsi sewa lengkap dengan operator bersertifikasi SIO resmi jika dibutuhkan."
-    ],
-    ctaText: "Minta Penawaran Sewa"
-  },
+
   "maintenance": {
     title: "Service & Maintenance Forklift",
     subtitle: "Perbaikan Cepat & Akurat oleh Teknisi Bersertifikat",
@@ -179,7 +167,7 @@ export default async function ServicesDetailPage({ params }) {
             </p>
             
             <a
-              href={`https://wa.me/6285724380347?text=Halo%20Admin%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20bertanya%20mengenai%20${encodeURIComponent(content.title)}.`}
+              href={`https://wa.me/6285784380347?text=Halo%20Admin%20PT%20Denko%20Wahana%20Sakti,%20saya%20ingin%20bertanya%20mengenai%20${encodeURIComponent(content.title)}.`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-md"
