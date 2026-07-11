@@ -197,8 +197,13 @@ jobs:
             # ── Inject DB credentials ke .env ────────────────────
             echo "🔑 Inject DB credentials ke .env..."
             ENV_FILE="$PROJECT_DIR/backend/.env"
-            if [ ! -f "$ENV_FILE" ]; then
-              cp "$PROJECT_DIR/backend/.env.production" "$ENV_FILE"
+            EXISTING_KEY=""
+            if [ -f "$ENV_FILE" ]; then
+              EXISTING_KEY=$(grep -E "^APP_KEY=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs)
+            fi
+            cp "$PROJECT_DIR/backend/.env.production" "$ENV_FILE"
+            if [ -n "$EXISTING_KEY" ]; then
+              sed -i "s|^APP_KEY=.*|APP_KEY=${EXISTING_KEY}|" "$ENV_FILE"
             fi
             sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" "$ENV_FILE"
             sed -i "s|^DB_DATABASE=.*|DB_DATABASE=agungdenko_db|" "$ENV_FILE"

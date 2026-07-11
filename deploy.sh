@@ -42,6 +42,12 @@ mkdir -p bootstrap/cache
 if [ ! -f .env ]; then
     echo "⚠️ .env belum ada, menyalin .env.production..."
     cp .env.production .env
+fi
+
+# Pastikan APP_KEY terisi
+APP_KEY_VAL=$(grep -E "^APP_KEY=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs)
+if [ -z "$APP_KEY_VAL" ]; then
+    echo "🔑 Generating APP_KEY..."
     php artisan key:generate --force
 fi
 
