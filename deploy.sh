@@ -119,6 +119,11 @@ if ! ls database/migrations/*_create_jobs_table.php &>/dev/null; then
     php artisan queue:table
 fi
 
+if ! ls database/migrations/*_create_personal_access_tokens_table.php &>/dev/null; then
+    echo "   -> Publishing Sanctum migrations..."
+    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+fi
+
 # Jalankan migrasi database
 echo "🗄️ Menjalankan migrasi database..."
 php artisan migrate --force
