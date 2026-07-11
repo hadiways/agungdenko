@@ -154,6 +154,11 @@ if [ "$PAT_TABLE_EXISTS" -eq 0 ] && ! ls database/migrations/*_create_personal_a
     php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 fi
 
+# ⚡ Clear config cache DULU sebelum migrate (agar CORS & env baru langsung berlaku)
+echo "🧹 Clear stale config cache sebelum migrate..."
+php artisan config:clear
+php artisan cache:clear
+
 # Jalankan migrasi database
 echo "🗄️ Menjalankan migrasi database..."
 php artisan migrate --force

@@ -11,20 +11,38 @@ www.agungdenko.asia {
 	redir https://agungdenko.asia{uri} permanent
 }
 
-# Frontend - Static HTML
+# Frontend + Path-based API (same domain, no CORS)
 agungdenko.asia {
-	root * /opt/dws-portal/dws-nextjs/out
 
-	# Dynamic sitemap routing
+	# ── Backend API via path /api/* ─────────────────────────
+	route /api/* {
+		root * /opt/dws-portal/backend/public
+		php_fastcgi 127.0.0.1:9000
+		request_body { max_size 25MB }
+	}
+
+	# ── Laravel Storage ──────────────────────────────────────
+	route /storage/* {
+		root * /opt/dws-portal/backend/public
+		file_server
+	}
+
+	# ── Sanctum CSRF Cookie ──────────────────────────────────
+	route /sanctum/* {
+		root * /opt/dws-portal/backend/public
+		php_fastcgi 127.0.0.1:9000
+	}
+
+	# ── Dynamic sitemap ──────────────────────────────────────
 	route /sitemap.xml {
 		root * /opt/dws-portal/backend/public
 		rewrite * /sitemap.php
 		php_fastcgi 127.0.0.1:9000
 	}
 
+	# ── Frontend Static Files ────────────────────────────────
+	root * /opt/dws-portal/dws-nextjs/out
 	file_server
-
-	# Fallback ke Next.js routes
 	try_files {path} {path}.html {path}/index.html /index.html
 
 	# Cache asset statis 30 hari
