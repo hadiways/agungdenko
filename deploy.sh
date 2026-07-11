@@ -99,7 +99,11 @@ mysql -e "FLUSH PRIVILEGES;"
 
 # Generate missing framework migrations if not present
 echo "📋 Memeriksa migrasi framework yang diperlukan..."
-if ! ls database/migrations/*_create_permission_tables.php &>/dev/null; then
+
+# Spatie permissions - only publish if permissions table doesn't exist in DB yet
+PERM_TABLE_EXISTS=$(mysql -u"$DB_USER" -p"$DB_PASS" -h"127.0.0.1" "$DB_NAME" \
+    -se "SHOW TABLES LIKE 'permissions';" 2>/dev/null | wc -l)
+if [ "$PERM_TABLE_EXISTS" -eq 0 ] && ! ls database/migrations/*_create_permission_tables.php &>/dev/null; then
     echo "   -> Publishing Spatie Permission migrations..."
     php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 fi
@@ -119,7 +123,10 @@ if ! ls database/migrations/*_create_jobs_table.php &>/dev/null; then
     php artisan queue:table
 fi
 
-if ! ls database/migrations/*_create_personal_access_tokens_table.php &>/dev/null; then
+# Sanctum - only publish if personal_access_tokens table doesn't exist in DB yet
+PAT_TABLE_EXISTS=$(mysql -u"$DB_USER" -p"$DB_PASS" -h"127.0.0.1" "$DB_NAME" \
+    -se "SHOW TABLES LIKE 'personal_access_tokens';" 2>/dev/null | wc -l)
+if [ "$PAT_TABLE_EXISTS" -eq 0 ] && ! ls database/migrations/*_create_personal_access_tokens_table.php &>/dev/null; then
     echo "   -> Publishing Sanctum migrations..."
     php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 fi
