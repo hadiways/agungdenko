@@ -97,6 +97,23 @@ else
 fi
 mysql -e "FLUSH PRIVILEGES;"
 
+# ── Bersihkan file migrasi orphaned yang tersisa di filesystem server ──────
+# tar -xzf tidak menghapus file lama; kita hapus manual jika tabelnya sudah ada
+echo "🧹 Membersihkan file migrasi yang sudah tidak terpakai..."
+PERM_EXISTS=$(mysql -u"$DB_USER" -p"$DB_PASS" -h"127.0.0.1" "$DB_NAME" \
+    -se "SHOW TABLES LIKE 'permissions';" 2>/dev/null)
+if [ -n "$PERM_EXISTS" ]; then
+    find database/migrations/ -name "*_create_permission_tables.php" -delete 2>/dev/null || true
+    echo "   -> Removed orphaned permission migration (table exists)"
+fi
+
+PAT_EXISTS=$(mysql -u"$DB_USER" -p"$DB_PASS" -h"127.0.0.1" "$DB_NAME" \
+    -se "SHOW TABLES LIKE 'personal_access_tokens';" 2>/dev/null)
+if [ -n "$PAT_EXISTS" ]; then
+    find database/migrations/ -name "*_create_personal_access_tokens_table.php" -delete 2>/dev/null || true
+    echo "   -> Removed orphaned Sanctum migration (table exists)"
+fi
+
 # Generate missing framework migrations if not present
 echo "📋 Memeriksa migrasi framework yang diperlukan..."
 
