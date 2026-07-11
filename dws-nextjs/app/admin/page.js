@@ -53,46 +53,81 @@ export default function AdminDashboard() {
 
   // Load configuration and data states on mount
   useEffect(() => {
-    // 1. Load Sales Profile
-    const savedProfile = localStorage.getItem("sales_profile");
-    if (savedProfile) {
+    const token = localStorage.getItem("dws_admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+    // 1. Fetch Setting from API
+    async function loadSettings() {
       try {
-        setSalesForm(JSON.parse(savedProfile));
-      } catch (e) {
-        console.error("Failed to load sales profile", e);
+        const response = await fetch(`${apiUrl}/settings`);
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const apiSettings = result.data;
+          // Load existing localStorage profile
+          const savedProfile = localStorage.getItem("sales_profile");
+          let profile = {
+            name: "Agung Ramdhani",
+            role: "Sales Consultant",
+            phone: apiSettings.whatsapp || "6285784380347",
+            status: "Online sekarang",
+            avatar: ""
+          };
+          if (savedProfile) {
+            try {
+              profile = { ...profile, ...JSON.parse(savedProfile) };
+            } catch (e) {}
+          }
+          profile.phone = apiSettings.whatsapp || profile.phone;
+          setSalesForm(profile);
+          localStorage.setItem("sales_profile", JSON.stringify(profile));
+        }
+      } catch (err) {
+        console.error("Failed to load settings from API", err);
       }
     }
+    loadSettings();
 
-    // 2. Load Customer Leads
-    const savedLeads = localStorage.getItem("quote_leads");
-    let activeLeads = [];
-    if (savedLeads) {
+    // 2. Fetch Customer Leads (Contact Messages) from API
+    async function loadLeads() {
       try {
-        activeLeads = JSON.parse(savedLeads);
-      } catch (e) {
-        activeLeads = [];
+        const response = await fetch(`${apiUrl}/contact-messages`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          }
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const apiLeads = result.data.map(l => ({
+            id: l.id,
+            company: l.company || l.name,
+            phone: l.phone,
+            product: l.subject || l.message || "Lainnya",
+            date: new Date(l.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
+            waLink: `https://wa.me/${l.phone.replace(/[^\d]/g, "")}`
+          }));
+          setLeadsCount(apiLeads.length);
+          setRecentLeadsList(apiLeads.slice(0, 3));
+        }
+      } catch (err) {
+        console.error("Failed to load leads from API", err);
       }
-    } else {
-      localStorage.setItem("quote_leads", JSON.stringify([]));
     }
-    setLeadsCount(activeLeads.length);
-    setRecentLeadsList(activeLeads.slice(0, 3));
+    if (token) {
+      loadLeads();
+    }
 
-    // 3. Load dynamic products count
+    // 3. Fetch Products Count from API
     async function loadProductsCount() {
       try {
-        const cmsProducts = await sanityFetch(PRODUCTS_QUERY);
-        const baseProducts = cmsProducts || [];
-        const savedProducts = localStorage.getItem("custom_products");
-        let customCount = 0;
-        if (savedProducts) {
-          try {
-            customCount = JSON.parse(savedProducts).length;
-          } catch (e) {}
+        const response = await fetch(`${apiUrl}/products`);
+        const result = await response.json();
+        if (response.ok) {
+          const list = result.data || result;
+          setProductsCount(Array.isArray(list) ? list.length : 0);
         }
-        setProductsCount(baseProducts.length + customCount);
       } catch (err) {
-        console.error("Failed to fetch products count for stats", err);
+        console.error("Failed to fetch products count from API", err);
       }
     }
     loadProductsCount();
@@ -127,8 +162,10 @@ export default function AdminDashboard() {
     return cleaned.trim();
   };
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("dws_admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
     const sanitized = {
       name: sanitizeInput(salesForm.name),
       role: sanitizeInput(salesForm.role),
@@ -136,12 +173,36 @@ export default function AdminDashboard() {
       status: sanitizeInput(salesForm.status),
       avatar: salesForm.avatar
     };
-    localStorage.setItem("sales_profile", JSON.stringify(sanitized));
-    setSalesForm(sanitized);
-    alert("Profil Sales berhasil disimpan secara dinamis!");
+
+    try {
+      const response = await fetch(`${apiUrl}/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          whatsapp: sanitized.phone
+        })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        localStorage.setItem("sales_profile", JSON.stringify(sanitized));
+        setSalesForm(sanitized);
+        alert("Profil Sales & database WhatsApp berhasil disimpan secara dinamis!");
+      } else {
+        alert(result.message || "Gagal menyimpan ke database.");
+      }
+    } catch (err) {
+      console.error("Save profile error:", err);
+      alert("Gagal terhubung ke API backend, tetapi profil disimpan secara lokal.");
+      localStorage.setItem("sales_profile", JSON.stringify(sanitized));
+      setSalesForm(sanitized);
+    }
   };
 
-  const handleResetProfile = () => {
+  const handleResetProfile = async () => {
     if (confirm("Reset profil ke bawaan default?")) {
       const defaultProfile = {
         name: "Agung Ramdhani",
@@ -150,6 +211,23 @@ export default function AdminDashboard() {
         status: "Online sekarang",
         avatar: ""
       };
+      const token = localStorage.getItem("dws_admin_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      
+      try {
+        await fetch(`${apiUrl}/settings`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            whatsapp: "6285784380347"
+          })
+        });
+      } catch (e) {}
+
       setSalesForm(defaultProfile);
       localStorage.setItem("sales_profile", JSON.stringify(defaultProfile));
       alert("Profil direset ke bawaan asli!");

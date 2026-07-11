@@ -55,6 +55,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
+          envs: DB_PASSWORD
           script: |
             set -e
             export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -63,46 +64,94 @@ jobs:
             echo "🚀 Memulai proses deploy..."
 
             # ── Deteksi OS Version untuk Remi ───────────────────
-            OS_VER=$(cat /etc/os-release | grep "^VERSION_ID" | cut -d'"' -f2 | cut -d'.' -f1)
+            OS_VER=$(grep "^VERSION_ID" /etc/os-release | cut -d'"' -f2 | cut -d'.' -f1)
             echo "📋 OS Version: $OS_VER"
+
+            # ── Install Git ──────────────────────────────────────
+            if ! command -v git &>/dev/null; then
+              echo "📦 Install git..."
+              if command -v dnf &>/dev/null; then dnf install -y git; else yum install -y git; fi
+            fi
 
             # ── Install/Upgrade PHP 8.3 ──────────────────────────
             PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "0.0")
+            PHP_MAJOR=$(echo "$PHP_VER" | cut -d'.' -f1)
+            PHP_MINOR=$(echo "$PHP_VER" | cut -d'.' -f2)
             echo "🐘 PHP versi saat ini: $PHP_VER"
 
-            if [[ "$PHP_VER" != "8.2" && "$PHP_VER" != "8.3" && "$PHP_VER" != "8.4" ]]; then
-              echo "⚙️ Install PHP 8.3 dari Remi..."
+            NEED_UPGRADE=0
+            if [ "$PHP_MAJOR" -lt 8 ]; then NEED_UPGRADE=1
+            elif [ "$PHP_MAJOR" -eq 8 ] && [ "$PHP_MINOR" -lt 2 ]; then NEED_UPGRADE=1
+            fi
 
-              # Install EPEL + Remi repo
-              dnf install -y epel-release 2>/dev/null || yum install -y epel-release
-              dnf install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || \
-              yum install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm"
-
-              # Reset module PHP lama, aktifkan PHP 8.3 dari Remi
-              dnf module reset php -y || true
-              dnf module enable php:remi-8.3 -y
-
-              # Hapus PHP lama jika ada
-              dnf remove -y php php-* 2>/dev/null || true
-
-              # Install PHP 8.3 + ekstensi Laravel
-              dnf install -y \
-                php php-fpm php-cli php-common \
-                php-mysqlnd php-pdo php-mbstring \
-                php-xml php-curl php-zip \
-                php-bcmath php-gd php-intl \
-                php-opcache php-process php-tokenizer
-
-              systemctl enable php-fpm && systemctl start php-fpm
+            if [ "$NEED_UPGRADE" -eq 1 ]; then
+              echo "⚙️ Upgrade PHP ke 8.3 dari Remi..."
+              if command -v dnf &>/dev/null; then
+                dnf install -y epel-release 2>/dev/null || true
+                dnf install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || true
+                dnf module reset php -y 2>/dev/null || true
+                dnf module enable php:remi-8.3 -y 2>/dev/null || true
+                dnf remove -y 'php*' 2>/dev/null || true
+                dnf install -y php php-fpm php-cli php-common php-mysqlnd php-pdo \
+                  php-mbstring php-xml php-curl php-zip php-bcmath php-gd php-intl \
+                  php-opcache php-process php-tokenizer
+              else
+                yum install -y epel-release 2>/dev/null || true
+                yum install -y "https://rpms.remirepo.net/enterprise/remi-release-${OS_VER}.rpm" 2>/dev/null || true
+                yum-config-manager --enable remi-php83 2>/dev/null || true
+                yum remove -y 'php*' 2>/dev/null || true
+                yum install -y php php-fpm php-cli php-common php-mysqlnd php-pdo \
+                  php-mbstring php-xml php-curl php-zip php-bcmath php-gd php-intl \
+                  php-opcache php-process php-tokenizer
+              fi
+              systemctl enable php-fpm 2>/dev/null || true
+              systemctl restart php-fpm 2>/dev/null || true
               echo "✅ PHP $(php -v | head -1)"
             else
               echo "✅ PHP $PHP_VER sudah memenuhi syarat"
             fi
 
+            # ── Install MySQL 8.0 ────────────────────────────────
+            if ! systemctl is-active --quiet mysqld 2>/dev/null; then
+              echo "🗄️ Install MySQL 8.0..."
+              if command -v dnf &>/dev/null; then
+                dnf install -y "https://dev.mysql.com/get/mysql80-community-release-el${OS_VER}-1.noarch.rpm" 2>/dev/null || true
+                dnf install -y mysql-community-server 2>/dev/null || true
+              else
+                yum install -y "https://dev.mysql.com/get/mysql80-community-release-el${OS_VER}-1.noarch.rpm" 2>/dev/null || true
+                yum install -y mysql-community-server 2>/dev/null || true
+              fi
+              systemctl enable mysqld
+              systemctl start mysqld
+              sleep 5
+
+              # Ambil temporary root password
+              TEMP_PASS=$(grep 'temporary password' /var/log/mysqld.log 2>/dev/null | awk '{print $NF}' | tail -1 || echo "")
+              if [ -n "$TEMP_PASS" ]; then
+                echo "🔐 Reset root password MySQL..."
+                mysql --connect-expired-password -uroot -p"${TEMP_PASS}" \
+                  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASSWORD}'; FLUSH PRIVILEGES;" 2>/dev/null || true
+              fi
+              echo "✅ MySQL siap"
+            else
+              echo "✅ MySQL sudah running"
+            fi
+
+            # ── Buat database & user jika belum ada ─────────────
+            echo "🗃️ Setup database agungdenko_db..."
+            mysql -uroot -p"${DB_PASSWORD}" --connect-expired-password 2>/dev/null <<MYSQL_SETUP || true
+            CREATE DATABASE IF NOT EXISTS agungdenko_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+            CREATE USER IF NOT EXISTS 'agungdenko_user'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+            GRANT ALL PRIVILEGES ON agungdenko_db.* TO 'agungdenko_user'@'localhost';
+            FLUSH PRIVILEGES;
+            MYSQL_SETUP
+            echo "✅ Database agungdenko_db siap"
+
             # ── Install Composer ─────────────────────────────────
             if ! command -v composer &>/dev/null; then
               echo "🎼 Install Composer..."
               curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              chmod +x /usr/local/bin/composer
             fi
             echo "✅ $(composer --version)"
 
@@ -144,6 +193,18 @@ jobs:
             mkdir -p "$PROJECT_DIR"
             tar -xzf /tmp/project.tar.gz -C "$PROJECT_DIR"
             rm -f /tmp/project.tar.gz
+
+            # ── Inject DB credentials ke .env ────────────────────
+            echo "🔑 Inject DB credentials ke .env..."
+            ENV_FILE="$PROJECT_DIR/backend/.env"
+            if [ ! -f "$ENV_FILE" ]; then
+              cp "$PROJECT_DIR/backend/.env.production" "$ENV_FILE"
+            fi
+            sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" "$ENV_FILE"
+            sed -i "s|^DB_DATABASE=.*|DB_DATABASE=agungdenko_db|" "$ENV_FILE"
+            sed -i "s|^DB_USERNAME=.*|DB_USERNAME=agungdenko_user|" "$ENV_FILE"
+            sed -i "s|^DB_HOST=.*|DB_HOST=127.0.0.1|" "$ENV_FILE"
+            echo "✅ DB credentials ter-inject ke .env"
 
             # ── Jalankan deploy.sh ───────────────────────────────
             echo "⚙️ Menjalankan deploy.sh..."

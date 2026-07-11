@@ -11,34 +11,69 @@ export default function AdminLayout({ children }) {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
-  const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "agung";
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "agung*";
-
   useEffect(() => {
     const authStatus = localStorage.getItem("dws_admin_logged_in");
-    if (authStatus === "true") {
+    const token = localStorage.getItem("dws_admin_token");
+    if (authStatus === "true" && token) {
       setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
     setIsLoading(false);
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (
-      credentials.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() &&
-      credentials.password === ADMIN_PASSWORD
-    ) {
-      localStorage.setItem("dws_admin_logged_in", "true");
-      setIsLoggedIn(true);
-      setError("");
-    } else {
-      setError("Username atau password salah!");
+    setError("");
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const response = await fetch(`${apiUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        localStorage.setItem("dws_admin_logged_in", "true");
+        localStorage.setItem("dws_admin_token", result.data.token);
+        localStorage.setItem("dws_admin_user", JSON.stringify(result.data.user));
+        setIsLoggedIn(true);
+        setError("");
+      } else {
+        const errorMsg = result.message || "Email atau password salah!";
+        setError(errorMsg);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Gagal terhubung ke server API. Pastikan backend sudah menyala.");
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm("Apakah Anda yakin ingin keluar dari panel admin?")) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const token = localStorage.getItem("dws_admin_token");
+      try {
+        await fetch(`${apiUrl}/logout`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          },
+        });
+      } catch (err) {
+        console.error("Logout API error:", err);
+      }
       localStorage.removeItem("dws_admin_logged_in");
+      localStorage.removeItem("dws_admin_token");
+      localStorage.removeItem("dws_admin_user");
       setIsLoggedIn(false);
     }
   };

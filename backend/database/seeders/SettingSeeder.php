@@ -14,7 +14,7 @@ class SettingSeeder extends Seeder
             'address' => 'Kawasan Industri Jababeka, Cikarang, Bekasi, Jawa Barat, Indonesia',
             'phone' => '+62 21 8984 0000',
             'email' => 'info@dws.co.id',
-            'whatsapp' => '+62 812 3456 7890',
+            'whatsapp' => '+62 857-8438-0347',
             'facebook' => 'https://facebook.com/denkowahanasakti',
             'instagram' => 'https://instagram.com/denkowahanasakti',
             'linkedin' => 'https://linkedin.com/company/pt-denko-wahana-sakti',

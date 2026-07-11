@@ -165,23 +165,29 @@ export default function Home() {
         } else { setGalleryItems(baseGallery); }
 
         // 6. Products
-        const savedProducts = localStorage.getItem("custom_products");
-        console.log("DEBUG: scrapedProducts raw:", scrapedProducts ? scrapedProducts.length : "null");
-        console.log("DEBUG: baseProducts:", baseProducts.length);
-        console.log("DEBUG: savedProducts from localStorage:", savedProducts);
-        if (savedProducts) {
-          try { 
-            const parsed = JSON.parse(savedProducts);
-            console.log("DEBUG: parsed custom_products:", parsed.length);
-            setProducts([...parsed, ...baseProducts]); 
+        let finalProducts = baseProducts;
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+          const response = await fetch(`${apiUrl}/products`);
+          const result = await response.json();
+          if (response.ok) {
+            const list = result.data || result;
+            if (Array.isArray(list) && list.length > 0) {
+              finalProducts = list.map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                category: p.category ? p.category.name : "Forklifts",
+                image: p.thumbnail || "/images/products/forklift-electric.jpg",
+                description: p.short_description || p.description,
+                isCustom: true
+              }));
+            }
           }
-          catch (e) { 
-            console.error("DEBUG: Failed to parse custom_products", e);
-            setProducts(baseProducts); 
-          }
-        } else { 
-          setProducts(baseProducts); 
+        } catch (err) {
+          console.error("Failed to load products from API on homepage", err);
         }
+        setProducts(finalProducts);
       } catch (err) {
         console.error("Failed to fetch CMS content", err);
       }

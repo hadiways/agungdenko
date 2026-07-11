@@ -55,21 +55,32 @@ export default function ProductDetailClient({ initialProduct, relatedProducts })
   const [activeTab, setActiveTab] = useState("deskripsi");
 
   useEffect(() => {
-    if (initialProduct) {
-      const saved = localStorage.getItem("custom_products");
-      if (saved) {
-        try {
-          const custom = JSON.parse(saved);
-          const current = custom.find((p) => p.slug === initialProduct.slug);
-          if (current) {
-            setProduct(current);
-            setActiveImg(current.image);
-          }
-        } catch (e) {
-          console.error("Failed to parse custom products on client", e);
+    async function loadFreshProduct() {
+      if (!initialProduct) return;
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const response = await fetch(`${apiUrl}/products/${initialProduct.slug}`);
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const p = result.data;
+          const mapped = {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            category: p.category ? p.category.name : "Forklifts",
+            image: p.thumbnail || "/images/products/forklift-electric.jpg",
+            description: p.description,
+            specification: p.specification,
+            isCustom: true
+          };
+          setProduct(mapped);
+          setActiveImg(mapped.image);
         }
+      } catch (err) {
+        console.error("Failed to load fresh product details on client", err);
       }
     }
+    loadFreshProduct();
   }, [initialProduct]);
 
   if (!product) return null;

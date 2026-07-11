@@ -13,26 +13,34 @@ export default function ProductsPage() {
     async function loadProducts() {
       try {
         const baseProducts = scrapedProducts || [];
+        setProducts(baseProducts.map(p => ({
+          ...p,
+          isCustom: false
+        })));
 
-        const saved = localStorage.getItem("custom_products");
-        if (saved) {
-          try {
-            const custom = JSON.parse(saved);
-            setProducts([...custom, ...baseProducts]);
-          } catch (e) {
-            console.error("Failed to load custom products", e);
-            setProducts(baseProducts);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const response = await fetch(`${apiUrl}/products`);
+        const result = await response.json();
+        if (response.ok) {
+          const list = result.data || result;
+          if (Array.isArray(list) && list.length > 0) {
+            setProducts(list.map(p => ({
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              category: p.category ? p.category.name : "Forklifts",
+              image: p.thumbnail || "/images/products/forklift-electric.jpg",
+              description: p.short_description || p.description,
+              isCustom: true
+            })));
           }
-        } else {
-          setProducts(baseProducts);
         }
       } catch (err) {
-        console.error("Failed to load products", err);
+        console.error("Failed to load products from API", err);
       }
     }
     loadProducts();
 
-    // Check for category query parameter in URL
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const cat = params.get("cat");
@@ -63,16 +71,15 @@ export default function ProductsPage() {
           <div className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 overflow-x-auto pb-3 md:pb-0 scrollbar-none snap-x">
             {[
               { name: "Semua", icon: <Grid size={16} /> },
-              { name: "Material Handling", icon: <Package size={16} /> },
-              { name: "Dalton Hardware Tools", icon: <Wrench size={16} /> },
-              { name: "Castor Wheel Division", icon: <Disc size={16} /> },
-              { name: "Turbin Ventilator", icon: <Wind size={16} /> }
+              { name: "Forklifts", icon: <Package size={16} /> },
+              { name: "Electric Stackers", icon: <Package size={16} /> },
+              { name: "Hand Pallet Trucks", icon: <Package size={16} /> },
+              { name: "Scissor Lifts & Aerial Work Platforms", icon: <Package size={16} /> }
             ].map((cat) => (
               <button
                 key={cat.name}
                 onClick={() => {
                   setSelectedCategory(cat.name);
-                  // Update URL parameter without reloading
                   if (typeof window !== "undefined") {
                     const newUrl = cat.name === "Semua" 
                       ? window.location.pathname 

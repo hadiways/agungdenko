@@ -6,61 +6,46 @@ import { UploadCloud, Trash2 } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
-  const [customProducts, setCustomProducts] = useState([]);
 
-  const DEFAULT_CATEGORIES = [
-    "Forklift Diesel",
-    "Forklift Electric",
-    "Reach Truck",
-    "Stacker",
-    "Hand Pallet",
-    "Scissor Lift",
-    "Wheel Loader"
+  const CATEGORIES = [
+    { id: 1, name: "Forklifts" },
+    { id: 2, name: "Electric Stackers" },
+    { id: 3, name: "Hand Pallet Trucks" },
+    { id: 4, name: "Scissor Lifts & Aerial Work Platforms" }
   ];
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [newCategory, setNewCategory] = useState("");
 
   const [form, setForm] = useState({
     name: "",
     category: "",
     description: "",
     image: "",
+    imageFile: null
   });
 
-  // Load custom products, categories from localStorage and default products from scraped products JSON on mount
-  useEffect(() => {
-    async function loadAllProducts() {
-      try {
-        const baseProducts = scrapedProducts || [];
-
-        const saved = localStorage.getItem("custom_products");
-        if (saved) {
-          try {
-            const custom = JSON.parse(saved);
-            setCustomProducts(custom);
-            setProducts([...custom, ...baseProducts]);
-          } catch (e) {
-            console.error("Failed to parse custom products", e);
-            setProducts(baseProducts);
-          }
-        } else {
-          setProducts(baseProducts);
+  const loadAllProducts = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const response = await fetch(`${apiUrl}/products`);
+      const result = await response.json();
+      if (response.ok) {
+        const list = result.data || result;
+        if (Array.isArray(list)) {
+          setProducts(list.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category ? p.category.name : "Forklifts",
+            image: p.thumbnail || "/images/products/forklift-electric.jpg",
+            description: p.short_description || p.description,
+            isCustom: true
+          })));
         }
-
-        const savedCats = localStorage.getItem("product_categories");
-        if (savedCats) {
-          try {
-            setCategories(JSON.parse(savedCats));
-          } catch (e) {
-            console.error("Failed to parse categories", e);
-          }
-        } else {
-          localStorage.setItem("product_categories", JSON.stringify(DEFAULT_CATEGORIES));
-        }
-      } catch (err) {
-        console.error("Failed to fetch products for admin", err);
       }
+    } catch (err) {
+      console.error("Failed to fetch products for admin", err);
     }
+  };
+
+  useEffect(() => {
     loadAllProducts();
   }, []);
 
@@ -79,6 +64,7 @@ export default function AdminProductsPage() {
         setForm((prev) => ({
           ...prev,
           image: reader.result,
+          imageFile: file
         }));
       };
       reader.readAsDataURL(file);
@@ -93,68 +79,69 @@ export default function AdminProductsPage() {
     return cleaned.trim();
   };
 
-  const handleAddCategory = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault();
-    if (!newCategory.trim()) return;
-    const sanitized = sanitizeInput(newCategory.trim());
-    if (categories.includes(sanitized)) {
-      alert("Kategori sudah terdaftar.");
-      return;
-    }
-    const updated = [...categories, sanitized];
-    setCategories(updated);
-    localStorage.setItem("product_categories", JSON.stringify(updated));
-    setNewCategory("");
-    alert("Kategori baru berhasil ditambahkan!");
-  };
+    const token = localStorage.getItem("dws_admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-  const handleDeleteCategory = (catToDelete) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus kategori "${catToDelete}"?`)) {
-      const updated = categories.filter(c => c !== catToDelete);
-      setCategories(updated);
-      localStorage.setItem("product_categories", JSON.stringify(updated));
-      alert("Kategori berhasil dihapus!");
-    }
-  };
-
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    const sanitizedName = sanitizeInput(form.name);
-    const newProduct = {
-      id: "custom-" + Date.now() + "-" + sanitizedName.toLowerCase().replace(/\s+/g, "-"),
-      name: sanitizedName,
-      image: form.image || "/images/products/forklift-electric.jpg", // default fallback thumbnail
-      category: sanitizeInput(form.category),
-      description: sanitizeInput(form.description),
-      isCustom: true, // mark to identify custom items
-    };
-
-    const updatedCustom = [newProduct, ...customProducts];
-    setCustomProducts(updatedCustom);
-    const defaultProducts = products.filter(p => !p.isCustom);
-    setProducts([...updatedCustom, ...defaultProducts]);
-    localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
-
-    setForm({ name: "", category: "", description: "", image: "" });
-    alert("Produk berhasil ditambahkan ke katalog dinamis!");
-  };
-
-  const handleDeleteProduct = (id) => {
-    const targetProduct = products.find((p) => p.id === id);
-    if (!targetProduct) return;
-
-    if (!targetProduct.isCustom) {
-      alert("Produk bawaan sistem (default) tidak dapat dihapus.");
-      return;
+    const formData = new FormData();
+    formData.append("name", sanitizeInput(form.name));
+    formData.append("category_id", form.category);
+    formData.append("description", sanitizeInput(form.description));
+    formData.append("short_description", sanitizeInput(form.description).slice(0, 150));
+    if (form.imageFile) {
+      formData.append("thumbnail", form.imageFile);
     }
 
-    if (confirm("Apakah Anda yakin ingin menghapus produk kustom ini?")) {
-      const updatedCustom = customProducts.filter((p) => p.id !== id);
-      setCustomProducts(updatedCustom);
-      const defaultProducts = products.filter((p) => !p.isCustom);
-      setProducts([...updatedCustom, ...defaultProducts]);
-      localStorage.setItem("custom_products", JSON.stringify(updatedCustom));
-      alert("Produk berhasil dihapus!");
+    try {
+      const response = await fetch(`${apiUrl}/products`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        alert("Produk berhasil ditambahkan!");
+        setForm({ name: "", category: "", description: "", image: "", imageFile: null });
+        loadAllProducts();
+      } else {
+        alert(result.message || "Gagal menambahkan produk.");
+      }
+    } catch (err) {
+      console.error("Add product error:", err);
+      alert("Gagal terhubung ke API backend.");
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+      const token = localStorage.getItem("dws_admin_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+      try {
+        const response = await fetch(`${apiUrl}/products/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          }
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+          alert("Produk berhasil dihapus!");
+          loadAllProducts();
+        } else {
+          alert(result.message || "Gagal menghapus produk.");
+        }
+      } catch (err) {
+        console.error("Delete product error:", err);
+        alert("Gagal terhubung ke API backend.");
+      }
     }
   };
 
@@ -200,8 +187,8 @@ export default function AdminProductsPage() {
                   className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 >
                   <option value="" disabled>Pilih Kategori</option>
-                  {categories.map((cat, idx) => (
-                    <option key={idx} value={cat}>{cat}</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
               </div>
@@ -249,35 +236,17 @@ export default function AdminProductsPage() {
             {/* Manage Categories Card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4 h-fit">
               <h3 className="text-brand-darkBg font-display font-bold text-sm border-b border-gray-100 pb-3 flex items-center justify-between">
-                <span>Kelola Kategori</span>
+                <span>Kategori Terdaftar</span>
                 <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">
-                  {categories.length} Total
+                  {CATEGORIES.length} Total
                 </span>
               </h3>
               
-              {/* Form Add */}
-              <form onSubmit={handleAddCategory} className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="Kategori Baru..."
-                  className="flex-1 bg-brand-lightBg border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-blue"
-                />
-                <button type="submit" className="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors">
-                  Tambah
-                </button>
-              </form>
-
               {/* List Categories */}
-              <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-                {categories.map((cat, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-3 py-2 border border-gray-100 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                    <span className="text-xs text-gray-700 font-semibold">{cat}</span>
-                    <button type="button" onClick={() => handleDeleteCategory(cat)} className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+              <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                {CATEGORIES.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between px-3 py-2 border border-gray-100 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                    <span className="text-xs text-gray-700 font-semibold">{cat.name}</span>
                   </div>
                 ))}
               </div>

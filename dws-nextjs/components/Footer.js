@@ -195,7 +195,7 @@ Berikut detail kebutuhan saya:
           <h3 className="text-white font-display font-bold text-xl uppercase tracking-wider border-b-2 border-brand-blue pb-2 mb-4 inline-block">Kantor Kami</h3>
           <p className="text-gray-300 text-sm mb-4 leading-relaxed">
             <strong>PT Denko Wahana Sakti Bandung</strong><br />
-            Jl. Soekarno Hatta No. 645, Bandung, Jawa Barat 40286, Indonesia
+            Kawasan Industri De PrimaTerra, Jl. Raya Sapan No.11 Blok E2, RT.01/RW.01, Tegalluar, Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287
           </p>
 
           {/* Map Frame */}

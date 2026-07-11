@@ -6,27 +6,60 @@ import { Download, MessageSquare, Trash2 } from "lucide-react";
 export default function AdminCustomersPage() {
   const [leads, setLeads] = useState([]);
 
+  const loadLeads = async () => {
+    const token = localStorage.getItem("dws_admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    try {
+      const response = await fetch(`${apiUrl}/contact-messages`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        }
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setLeads(result.data.map(l => ({
+          id: l.id,
+          company: l.company || l.name,
+          phone: l.phone,
+          product: l.subject || l.message || "Lainnya",
+          date: new Date(l.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
+          waLink: `https://wa.me/${l.phone.replace(/[^\d]/g, "")}`
+        })));
+      }
+    } catch (err) {
+      console.error("Failed to load customer leads", err);
+    }
+  };
+
   useEffect(() => {
     document.title = "DWS Admin | Customer Leads";
-    const saved = localStorage.getItem("quote_leads");
-    if (saved) {
-      try {
-        setLeads(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse local leads", e);
-        setLeads([]);
-      }
-    } else {
-      localStorage.setItem("quote_leads", JSON.stringify([]));
-      setLeads([]);
-    }
+    loadLeads();
   }, []);
 
-  const handleDeleteLead = (idx) => {
+  const handleDeleteLead = async (id) => {
     if (confirm("Apakah Anda yakin ingin menghapus log leads ini?")) {
-      const updated = leads.filter((_, i) => i !== idx);
-      setLeads(updated);
-      localStorage.setItem("quote_leads", JSON.stringify(updated));
+      const token = localStorage.getItem("dws_admin_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      try {
+        const response = await fetch(`${apiUrl}/contact-messages/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          }
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          alert("Log lead berhasil dihapus!");
+          loadLeads();
+        } else {
+          alert(result.message || "Gagal menghapus log lead.");
+        }
+      } catch (err) {
+        console.error("Delete lead error:", err);
+        alert("Gagal terhubung ke API backend.");
+      }
     }
   };
 
@@ -82,8 +115,8 @@ export default function AdminCustomersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100 text-gray-700">
                 {leads.length > 0 ? (
-                  leads.map((lead, idx) => (
-                    <tr key={idx} className="hover:bg-brand-blue/5 transition-colors">
+                  leads.map((lead) => (
+                    <tr key={lead.id} className="hover:bg-brand-blue/5 transition-colors">
                       <td className="py-4 px-6 font-bold text-brand-darkBg">{lead.company}</td>
                       <td className="py-4 px-6 font-medium">{lead.phone}</td>
                       <td className="py-4 px-6">
@@ -104,7 +137,7 @@ export default function AdminCustomersPage() {
                             Hubungi WA
                           </a>
                           <button
-                            onClick={() => handleDeleteLead(idx)}
+                            onClick={() => handleDeleteLead(lead.id)}
                             className="bg-red-50 hover:bg-red-100 text-red-600 p-2.5 rounded-lg transition-colors border border-red-200"
                           >
                             <Trash2 className="w-4 h-4" />
