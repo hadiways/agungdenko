@@ -39,7 +39,13 @@ export default function AdminLayout({ children }) {
         }),
       });
 
-      const result = await response.json();
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (jsonErr) {
+        console.warn("Response is not JSON", jsonErr);
+      }
+
       if (response.ok && result.success) {
         localStorage.setItem("dws_admin_logged_in", "true");
         localStorage.setItem("dws_admin_token", result.data.token);
@@ -47,8 +53,11 @@ export default function AdminLayout({ children }) {
         setIsLoggedIn(true);
         setError("");
       } else {
-        const errorMsg = result.message || "Email atau password salah!";
-        setError(errorMsg);
+        if (response.status === 429) {
+          setError("Terlalu banyak percobaan login. Silakan tunggu 1 menit.");
+        } else {
+          setError(result.message || "Email atau password salah!");
+        }
       }
     } catch (err) {
       console.error("Login error:", err);
