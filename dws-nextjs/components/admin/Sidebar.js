@@ -58,9 +58,11 @@ export default function AdminSidebar({ handleLogout }) {
         {/* Logo at top */}
         <div className="h-20 flex items-center px-6 border-b border-white/5">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex items-center justify-center bg-brand-blue text-white font-display font-extrabold text-lg px-2.5 py-0.5 rounded-md skew-x-12 transform group-hover:scale-105 duration-300">
-              <span className="-skew-x-12">DWS</span>
-            </div>
+            <img
+              src="/logo-dws.png"
+              alt="DWS Logo"
+              className="h-9 w-9 object-contain rounded-sm group-hover:scale-105 transition-transform duration-300"
+            />
             <div className="flex flex-col">
               <span className="text-white font-display font-bold text-xs tracking-wider">ADMIN PANEL</span>
               <span className="text-brand-blueLight text-[9px] font-light">Material Handling</span>

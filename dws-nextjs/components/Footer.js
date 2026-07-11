@@ -18,7 +18,7 @@ export default function Footer() {
     name: "Agung Ramdhani",
     role: "Sales Executive - PT Denko Wahana Sakti",
     phone: "6285784380347",
-    email: "agung.ramdhani@denkowahanasakti.co.id",
+    email: "agung@denko.co.id",
     avatar: ""
   });
 
@@ -49,7 +49,7 @@ export default function Footer() {
           name: parsed.name,
           role: parsed.role,
           phone: parsed.phone,
-          email: "agung.ramdhani@denkowahanasakti.co.id",
+          email: "agung@denko.co.id",
           avatar: parsed.avatar
         });
       } catch (e) {
@@ -174,11 +174,11 @@ Berikut detail kebutuhan saya:
               <span>{salesProfile.phone}</span>
             </a>
 
-            <a href="mailto:agung.ramdhani@denkowahanasakti.co.id" className="flex items-center gap-3 text-gray-300 hover:text-brand-blueLight transition-colors group">
+            <a href="mailto:agung@denko.co.id" className="flex items-center gap-3 text-gray-300 hover:text-brand-blueLight transition-colors group">
               <div className="w-9 h-9 rounded-lg bg-white/5 group-hover:bg-brand-blue/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-brand-blueLight" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
               </div>
-              <span>agung.ramdhani@denkowahanasakti.co.id</span>
+              <span>agung@denko.co.id</span>
             </a>
 
             <div className="flex items-center gap-3 text-gray-300">
@@ -195,7 +195,7 @@ Berikut detail kebutuhan saya:
           <h3 className="text-white font-display font-bold text-xl uppercase tracking-wider border-b-2 border-brand-blue pb-2 mb-4 inline-block">Kantor Kami</h3>
           <p className="text-gray-300 text-sm mb-4 leading-relaxed">
             <strong>PT Denko Wahana Sakti Bandung</strong><br />
-            Kawasan Industri De PrimaTerra, Jl. Raya Sapan No.11 Blok E2, RT.01/RW.01, Tegalluar, Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287
+            Kawasan Industri DE Prima Terra Blok E 2 No 11, Jalan Raya Sapan, RT 01 RW 01, Kelurahan Tegalluar, Kecamatan Bojongsoang, Kab. Bandung, Jawa Barat
           </p>
 
           {/* Map Frame */}

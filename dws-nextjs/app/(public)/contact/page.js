@@ -61,7 +61,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="text-brand-darkBg font-bold text-sm">Email</h4>
-                    <a href="mailto:agung.ramdhani@denkowahanasakti.co.id" className="text-gray-600 text-xs hover:text-brand-blue transition-colors">agung.ramdhani@denkowahanasakti.co.id</a>
+                    <a href="mailto:agung@denko.co.id" className="text-gray-600 text-xs hover:text-brand-blue transition-colors">agung@denko.co.id</a>
                   </div>
                 </div>
 
@@ -72,7 +72,7 @@ export default function ContactPage() {
                   <div>
                     <h4 className="text-brand-darkBg font-bold text-sm">Kantor Cabang</h4>
                     <p className="text-gray-600 text-xs leading-relaxed">
-                      Jl. Soekarno Hatta No. 645, Bandung, Jawa Barat 40286, Indonesia
+                      Kawasan Industri DE Prima Terra Blok E 2 No 11, Jalan Raya Sapan, RT 01 RW 01, Kelurahan Tegalluar, Kecamatan Bojongsoang, Kab. Bandung, Jawa Barat
                     </p>
                   </div>
                 </div>

@@ -209,9 +209,11 @@ export default function Navbar() {
     >
       {/* Brand Logo */}
       <Link href="/" className="flex items-center gap-3 shrink-0 group">
-        <div className="flex items-center justify-center bg-brand-blue text-white font-display font-extrabold text-lg sm:text-xl px-3 py-1 rounded-md skew-x-12 transform transition-transform group-hover:scale-105 duration-300 shadow-md">
-          <span className="-skew-x-12">DWS</span>
-        </div>
+        <img
+          src="/logo-dws.png"
+          alt="DWS Logo"
+          className="h-10 w-10 object-contain rounded-sm group-hover:scale-105 transition-transform duration-300"
+        />
         <div className="flex flex-col hidden sm:flex">
           <span className={`font-display font-bold text-xs tracking-wide leading-none transition-colors ${
             shouldUseDarkText ? "text-brand-darkBg group-hover:text-brand-blue" : "text-white group-hover:text-brand-blueLight"

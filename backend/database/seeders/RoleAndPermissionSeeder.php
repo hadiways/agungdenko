@@ -91,7 +91,7 @@ class RoleAndPermissionSeeder extends Seeder
         // Create Default Super Admin User
         $adminUser = User::create([
             'name' => 'Agung Denko Admin',
-            'email' => 'agung@denko.com',
+            'email' => 'agung@denko.co.id',
             'email_verified_at' => now(),
             'password' => bcrypt('agung123'),
         ]);
