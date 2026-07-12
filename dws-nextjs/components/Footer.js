@@ -207,7 +207,7 @@ Berikut detail kebutuhan saya:
               loading="lazy" 
               referrerPolicy="no-referrer-when-downgrade">
             </iframe>
-            <a href="https://maps.app.goo.gl/wS78n32Q1mK8P3Q59" target="_blank" rel="noopener noreferrer" className="absolute bottom-2 left-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded shadow-lg transition-colors">
+            <a href="https://www.google.com/maps/search/?api=1&query=Kawasan+Industri+DE+Prima+Terra+Blok+E2+No+11+Jalan+Raya+Sapan+Bojongsoang+Bandung" target="_blank" rel="noopener noreferrer" className="absolute bottom-2 left-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded shadow-lg transition-colors">
               Lihat di Google Maps
             </a>
           </div>
