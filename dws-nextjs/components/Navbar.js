@@ -471,7 +471,7 @@ export default function Navbar() {
             shouldUseDarkText ? "text-gray-600 hover:text-brand-darkBg" : "text-gray-300 hover:text-white"
           }`}>
             <Phone className="w-3 h-3 text-brand-blue" />
-            <span>(021) 1234 5678</span>
+            <span>(+62) 85784380347</span>
           </a>
           <span className={`text-[9px] transition-colors ${shouldUseDarkText ? "text-gray-400" : "text-gray-500"}`}>
             Senin - Jumat 08.00 - 17.00
