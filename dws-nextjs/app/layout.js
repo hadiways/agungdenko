@@ -2,9 +2,15 @@ import "./globals.css";
 
 export const metadata = {
   title: "PT Denko Wahana Sakti | Material Handling Solution",
-  description: "Distributor resmi forklift electric, diesel, reach truck, electric stacker, hand pallet, scissor lift, dan aerial work platform berkualitas dengan harga kompetitif dan after sales terbaik di Indonesia.",
-  keywords: "denko wahana sakti, forklift bandung, forklift electric, forklift diesel, reach truck, electric stacker, hand pallet, scissor lift, material handling indonesia, agung ramdhani sales",
+  description: "Distributor resmi forklift electric, diesel, reach truck, electric stacker, hand pallet, scissor lift, dan aerial work platform.",
+  keywords: "denko wahana sakti, forklift bandung, forklift electric, forklift diesel, reach truck, electric stacker",
   authors: [{ name: "Agung Ramdhani" }],
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/logo-dws.png",
+  },
 };
 
 export default function RootLayout({ children }) {
