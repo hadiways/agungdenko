@@ -55,7 +55,7 @@
 
                             <div class="mb-3">
                                 <label for="whatsapp" class="form-label fw-bold">WhatsApp Hotline</label>
-                                <input type="text" name="whatsapp" id="whatsapp" class="form-control" value="{{ old('whatsapp', $settings->whatsapp) }}" placeholder="e.g. +6281234567890">
+                                <input type="text" name="whatsapp" id="whatsapp" class="form-control" value="{{ old('whatsapp', $settings->whatsapp) }}" placeholder="e.g. +6285784380347">
                                 <div class="form-text small">Use international format with plus sign (+) for link redirection.</div>
                             </div>
                         </div>

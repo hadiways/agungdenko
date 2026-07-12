@@ -638,7 +638,7 @@ export default function Navbar() {
           <div className="flex flex-col gap-3 pt-3 border-t border-white/5 mt-2">
             <a href="tel:+622112345678" className="text-white hover:text-brand-blueLight text-xs font-bold flex items-center gap-1.5 justify-center py-2 transition-colors">
               <Phone className="w-4 h-4 text-brand-blueLight" />
-              <span>Hubungi DWS: (021) 1234 5678</span>
+              <span>Hubungi DWS: (+62) 85784380347</span>
             </a>
             
             <a 
