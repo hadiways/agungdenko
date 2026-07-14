@@ -62,14 +62,14 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create Roles and Assign Permissions
-        $superAdminRole = Role::create(['name' => 'Super Admin']);
+        $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
         // Super Admin gets all permissions implicitly via Gate::before in AuthServiceProvider
 
-        $adminRole = Role::create(['name' => 'Admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
         $adminRole->givePermissionTo([
             'view-products', 'create-products', 'edit-products', 'delete-products',
             'view-services', 'create-services', 'edit-services', 'delete-services',
@@ -80,7 +80,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view-messages', 'delete-messages',
         ]);
 
-        $editorRole = Role::create(['name' => 'Editor']);
+        $editorRole = Role::firstOrCreate(['name' => 'Editor']);
         $editorRole->givePermissionTo([
             'view-products', 'create-products', 'edit-products',
             'view-services', 'create-services', 'edit-services',
@@ -89,12 +89,14 @@ class RoleAndPermissionSeeder extends Seeder
         ]);
 
         // Create Default Super Admin User
-        $adminUser = User::create([
-            'name' => 'Agung Denko Admin',
-            'email' => 'agung@denko.co.id',
-            'email_verified_at' => now(),
-            'password' => bcrypt('agung123'),
-        ]);
+        $adminUser = User::firstOrCreate(
+            ['email' => 'agung@denko.co.id'],
+            [
+                'name' => 'Agung Denko Admin',
+                'email_verified_at' => now(),
+                'password' => bcrypt('agung123'),
+            ]
+        );
 
         $adminUser->assignRole($superAdminRole);
     }
