@@ -29,6 +29,7 @@ class BaseFormRequest extends FormRequest
             throw new HttpResponseException(
                 response()->json([
                     'success' => false,
+                    'message' => 'Validasi gagal.',
                     'errors' => $validator->errors(),
                 ], 422)
             );

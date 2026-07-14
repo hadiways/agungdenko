@@ -33,10 +33,11 @@ trait ApiResponseTrait
      */
     protected function errorResponse(mixed $errors = [], string $message = 'Error occurred', int $code = 400): JsonResponse
     {
-        // If it's a validation error response, match request format: {"success": false, "errors": {}}
+        // If it's a validation error response, match request format: {"success": false, "message": "...", "errors": {}}
         if ($code === 422) {
             return response()->json([
                 'success' => false,
+                'message' => $message === 'Error occurred' ? 'Data tidak valid.' : $message,
                 'errors' => $errors,
             ], $code);
         }

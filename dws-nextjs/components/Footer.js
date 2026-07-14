@@ -136,6 +136,27 @@ Berikut detail kebutuhan saya:
       console.error("Failed to save lead to localStorage", err);
     }
 
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      fetch(`${apiUrl}/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          name: name,
+          company: company || "Perseorangan",
+          phone: phone,
+          email: email,
+          subject: product || "Lainnya / Konsultasi",
+          message: message,
+        }),
+      }).catch(err => console.error("Failed to post contact message to API", err));
+    } catch (apiErr) {
+      console.error("Error setting up contact API call", apiErr);
+    }
+
     const encodedText = encodeURIComponent(baseText);
     const waUrl = `https://api.whatsapp.com/send?phone=${targetNumber}&text=${encodedText}`;
     window.open(waUrl, "_blank");

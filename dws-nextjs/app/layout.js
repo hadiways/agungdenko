@@ -1,16 +1,27 @@
 import "./globals.css";
 
 export const metadata = {
+  metadataBase: new URL("https://agungdenko.asia"),
   title: "PT Denko Wahana Sakti | Material Handling Solution",
   description: "Distributor resmi forklift electric, diesel, reach truck, electric stacker, hand pallet, scissor lift, dan aerial work platform.",
   keywords: "denko wahana sakti, forklift bandung, forklift electric, forklift diesel, reach truck, electric stacker",
   authors: [{ name: "Agung Ramdhani" }],
+<<<<<<< HEAD
 
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/logo-dws.png",
   },
+=======
+  icons: {
+    icon: [
+      { url: "/favicon.ico?v=1" },
+      { url: "/favicon.png?v=1", type: "image/png" }
+    ],
+    apple: "/icon.png?v=1",
+  }
+>>>>>>> 918afa9 (fix: resolve missing favicon issue)
 };
 
 export default function RootLayout({ children }) {

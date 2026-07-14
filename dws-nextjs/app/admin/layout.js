@@ -56,7 +56,8 @@ export default function AdminLayout({ children }) {
         if (response.status === 429) {
           setError("Terlalu banyak percobaan login. Silakan tunggu 1 menit.");
         } else {
-          setError(result.message || "Email atau password salah!");
+          const validationError = result.errors ? Object.values(result.errors)[0]?.[0] : null;
+          setError(validationError || result.message || "Email atau password salah!");
         }
       }
     } catch (err) {
@@ -124,17 +125,17 @@ export default function AdminLayout({ children }) {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-gray-400 text-[10px] font-bold uppercase mb-2 tracking-wider">Username / Email</label>
+                <label className="block text-gray-400 text-[10px] font-bold uppercase mb-2 tracking-wider">Email Address</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500">
                     <User className="w-4 h-4" />
                   </span>
                   <input
-                    type="text"
+                    type="email"
                     required
                     value={credentials.email}
                     onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                    placeholder="Username / Email"
+                    placeholder="admin@denko.co.id"
                     className="w-full bg-white/5 border border-white/10 focus:border-brand-blue rounded-xl pl-10 pr-4 py-3.5 text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-blue transition-all"
                   />
                 </div>
