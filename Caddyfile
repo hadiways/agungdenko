@@ -15,7 +15,7 @@ www.agungdenko.asia {
 agungdenko.asia {
 
 	# ── Backend API via path /api/* ─────────────────────────
-	route /api/* {
+	handle /api/* {
 		root * /opt/dws-portal/backend/public
 		php_fastcgi 127.0.0.1:9000
 		request_body {
@@ -24,28 +24,30 @@ agungdenko.asia {
 	}
 
 	# ── Laravel Storage ──────────────────────────────────────
-	route /storage/* {
+	handle /storage/* {
 		root * /opt/dws-portal/backend/public
 		file_server
 	}
 
 	# ── Sanctum CSRF Cookie ──────────────────────────────────
-	route /sanctum/* {
+	handle /sanctum/* {
 		root * /opt/dws-portal/backend/public
 		php_fastcgi 127.0.0.1:9000
 	}
 
 	# ── Dynamic sitemap ──────────────────────────────────────
-	route /sitemap.xml {
+	handle /sitemap.xml {
 		root * /opt/dws-portal/backend/public
 		rewrite * /sitemap.php
 		php_fastcgi 127.0.0.1:9000
 	}
 
 	# ── Frontend Static Files ────────────────────────────────
-	root * /opt/dws-portal/dws-nextjs/out
-	file_server
-	try_files {path} {path}.html {path}/index.html /index.html
+	handle {
+		root * /opt/dws-portal/dws-nextjs/out
+		try_files {path} {path}.html {path}/index.html /index.html
+		file_server
+	}
 
 	# Cache asset statis 30 hari
 	@static path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.webp
