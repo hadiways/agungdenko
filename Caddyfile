@@ -18,7 +18,9 @@ agungdenko.asia {
 	route /api/* {
 		root * /opt/dws-portal/backend/public
 		php_fastcgi 127.0.0.1:9000
-		request_body { max_size 25MB }
+		request_body {
+			max_size 25MB
+		}
 	}
 
 	# ── Laravel Storage ──────────────────────────────────────
