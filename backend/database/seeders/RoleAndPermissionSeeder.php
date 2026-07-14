@@ -89,7 +89,7 @@ class RoleAndPermissionSeeder extends Seeder
         ]);
 
         // Create Default Super Admin User
-        $adminUser = User::firstOrCreate(
+        $adminUser = User::updateOrCreate(
             ['email' => 'agung@denko.co.id'],
             [
                 'name' => 'Agung Denko Admin',
