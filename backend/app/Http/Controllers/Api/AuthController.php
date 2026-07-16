@@ -15,23 +15,32 @@ class AuthController extends ApiController
      */
     public function login(LoginRequest $request)
     {
-        $user = User::where('email', $request->email)->first();
+        try {
+            $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return $this->errorResponse(
-                ['email' => ['These credentials do not match our records.']],
-                'Unauthorized credentials',
-                422
-            );
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return $this->errorResponse(
+                    ['email' => ['These credentials do not match our records.']],
+                    'Unauthorized credentials',
+                    422
+                );
+            }
+
+            // Generate Sanctum access token
+            $token = $user->createToken('admin-api-token')->plainTextToken;
+
+            return $this->successResponse([
+                'token' => $token,
+                'user' => new UserResource($user),
+            ], 'Login successful');
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
         }
-
-        // Generate Sanctum access token
-        $token = $user->createToken('admin-api-token')->plainTextToken;
-
-        return $this->successResponse([
-            'token' => $token,
-            'user' => new UserResource($user),
-        ], 'Login successful');
     }
 
     /**
