@@ -34,9 +34,22 @@ class ProductService
         return $this->productRepository->paginate($perPage, ['*'], $relations);
     }
 
-    public function searchAndPaginate(string $search = null, string $category = null, int $perPage = 12): LengthAwarePaginator
-    {
-        return $this->productRepository->searchAndPaginate($search, $category, $perPage);
+    public function searchAndPaginate(
+        ?string $search = null,
+        ?string $category = null,
+        mixed $categoryId = null,
+        mixed $featured = null,
+        ?string $status = 'active',
+        int $perPage = 100
+    ): LengthAwarePaginator {
+        return $this->productRepository->searchAndPaginate(
+            search: $search,
+            category: $category,
+            categoryId: $categoryId,
+            featured: $featured,
+            status: $status,
+            perPage: $perPage
+        );
     }
 
     public function getFeatured(int $limit = 4)

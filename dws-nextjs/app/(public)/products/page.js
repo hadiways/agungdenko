@@ -33,6 +33,9 @@ export default function ProductsPage() {
     }
   }, []);
 
+  // Dynamically derive unique categories from API products data
+  const categories = ["Semua", ...Array.from(new Set(products.map(p => p.category))).filter(Boolean)];
+
   return (
     <>
       {/* Page Title Header */}
@@ -44,36 +47,32 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Category Filter Bar */}
+      {/* Category Filter Bar (Dynamic from Laravel API) */}
       <section className="py-8 bg-brand-lightBg px-6 border-b border-brand-blueLight/10">
         <div className="container mx-auto">
           <div className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 overflow-x-auto pb-3 md:pb-0 scrollbar-none snap-x">
-            {[
-              { name: "Semua", icon: <Grid size={16} /> },
-              { name: "Forklifts", icon: <Package size={16} /> },
-              { name: "Electric Stackers", icon: <Package size={16} /> },
-              { name: "Hand Pallet Trucks", icon: <Package size={16} /> },
-              { name: "Scissor Lifts & Aerial Work Platforms", icon: <Package size={16} /> }
-            ].map((cat) => (
+            {categories.map((catName) => (
               <button
-                key={cat.name}
+                key={catName}
                 onClick={() => {
-                  setSelectedCategory(cat.name);
+                  setSelectedCategory(catName);
                   if (typeof window !== "undefined") {
-                    const newUrl = cat.name === "Semua" 
+                    const newUrl = catName === "Semua" 
                       ? window.location.pathname 
-                      : `${window.location.pathname}?cat=${encodeURIComponent(cat.name)}`;
+                      : `${window.location.pathname}?cat=${encodeURIComponent(catName)}`;
                     window.history.pushState({ path: newUrl }, '', newUrl);
                   }
                 }}
                 className={`snap-align-start shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                  selectedCategory === cat.name
+                  selectedCategory === catName
                     ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/30 scale-105"
                     : "bg-white hover:bg-brand-lightBg text-brand-darkBg border border-brand-blueLight/10 hover:border-brand-blue/30 hover:text-brand-blue"
                 }`}
               >
-                <span className={selectedCategory === cat.name ? "text-white" : "text-brand-blue"}>{cat.icon}</span>
-                <span>{cat.name}</span>
+                <span className={selectedCategory === catName ? "text-white" : "text-brand-blue"}>
+                  {catName === "Semua" ? <Grid size={16} /> : <Package size={16} />}
+                </span>
+                <span>{catName}</span>
               </button>
             ))}
           </div>

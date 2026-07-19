@@ -60,9 +60,19 @@ class ProductApiController extends ApiController
     {
         $search = $request->query('search');
         $category = $request->query('category');
-        $perPage = $request->query('per_page', 12);
+        $categoryId = $request->query('category_id');
+        $featured = $request->query('featured');
+        $status = $request->query('status', 'active');
+        $perPage = (int) $request->query('per_page', 100);
 
-        $products = $this->productService->searchAndPaginate($search, $category, $perPage);
+        $products = $this->productService->searchAndPaginate(
+            search: $search,
+            category: $category,
+            categoryId: $categoryId,
+            featured: $featured,
+            status: $status,
+            perPage: $perPage
+        );
 
         return ProductResource::collection($products)->additional([
             'success' => true,

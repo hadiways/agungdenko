@@ -9,20 +9,22 @@ export default function AdminProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
-  const CATEGORIES = [
-    { id: 1, name: "Forklifts" },
-    { id: 2, name: "Electric Stackers" },
-    { id: 3, name: "Hand Pallet Trucks" },
-    { id: 4, name: "Scissor Lifts & Aerial Work Platforms" }
-  ];
-
   const [form, setForm] = useState({
     name: "",
-    category: "",
+    category: "Forklifts",
     description: "",
     image: "",
     imageFile: null
   });
+
+  // Dynamically derive registered categories from current products list
+  const categoriesList = Array.from(new Set([
+    "Forklifts",
+    "Electric Stackers",
+    "Hand Pallet Trucks",
+    "Scissor Lifts & Aerial Work Platforms",
+    ...products.map(p => p.category)
+  ].filter(Boolean))).map((name, index) => ({ id: index + 1, name }));
 
   const showToast = (msg, type = "success") => {
     setToastMessage({ text: msg, type });
@@ -31,20 +33,19 @@ export default function AdminProductsPage() {
 
   const loadAllProducts = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-      const response = await fetch(`${apiUrl}/products`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://agungdenko.asia/api";
+      const response = await fetch(`${apiUrl}/products`, { cache: "no-store" });
       const result = await response.json();
       if (response.ok) {
         const list = result.data || result;
         if (Array.isArray(list)) {
           setProducts(list.map(p => {
-            const catName = p.category ? (typeof p.category === "object" ? p.category.name : p.category) : "Forklifts";
-            const catObj = CATEGORIES.find(c => c.name.toLowerCase() === catName.toLowerCase());
+            const catName = p.category ? (typeof p.category === "object" ? (p.category.name || "Forklifts") : p.category) : "Forklifts";
             return {
               id: p.id,
               name: p.name || "",
               category: catName,
-              category_id: p.category_id || (catObj ? catObj.id : 1),
+              category_id: p.category_id || (p.category ? p.category.id : 1),
               image: p.thumbnail || p.image || "/images/products/forklift-electric.jpg",
               description: p.short_description || p.description || "",
               isCustom: true
@@ -85,15 +86,13 @@ export default function AdminProductsPage() {
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
-    const matchedCat = CATEGORIES.find(c => c.name.toLowerCase() === (product.category || "").toLowerCase());
     setForm({
       name: product.name,
-      category: matchedCat ? matchedCat.id : (product.category_id || 1),
+      category: product.category || "Forklifts",
       description: product.description,
       image: product.image,
       imageFile: null
     });
-    // Scroll form into view smoothly
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -101,7 +100,7 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
     setForm({
       name: "",
-      category: "",
+      category: "Forklifts",
       description: "",
       image: "",
       imageFile: null
@@ -122,11 +121,15 @@ export default function AdminProductsPage() {
 
     setIsSubmitting(true);
     const token = localStorage.getItem("dws_admin_token");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://agungdenko.asia/api";
+
+    const matchedCat = categoriesList.find(c => c.name.toLowerCase() === form.category.toLowerCase());
+    const categoryId = matchedCat ? matchedCat.id : 1;
 
     const formData = new FormData();
     formData.append("name", sanitizeInput(form.name));
-    formData.append("category_id", form.category);
+    formData.append("category_id", categoryId);
+    formData.append("category_name", form.category);
     formData.append("description", sanitizeInput(form.description));
     formData.append("short_description", sanitizeInput(form.description).slice(0, 150));
     
@@ -142,7 +145,6 @@ export default function AdminProductsPage() {
       };
 
       if (editingProduct) {
-        // Use Laravel method spoofing for multipart/form-data update
         url = `${apiUrl}/products/${editingProduct.id}`;
         formData.append("_method", "PUT");
       }
@@ -174,7 +176,7 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = async (id) => {
     if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       const token = localStorage.getItem("dws_admin_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://agungdenko.asia/api";
 
       try {
         const response = await fetch(`${apiUrl}/products/${id}`, {
@@ -269,9 +271,8 @@ export default function AdminProductsPage() {
                   required
                   className="w-full bg-brand-lightBg border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
                 >
-                  <option value="" disabled>Pilih Kategori</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  {categoriesList.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
               </div>
@@ -341,15 +342,15 @@ export default function AdminProductsPage() {
             {/* Manage Categories Card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4 h-fit">
               <h3 className="text-brand-darkBg font-display font-bold text-sm border-b border-gray-100 pb-3 flex items-center justify-between">
-                <span>Kategori Terdaftar</span>
+                <span>Kategori Terdaftar (Laravel API)</span>
                 <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">
-                  {CATEGORIES.length} Total
+                  {categoriesList.length} Total
                 </span>
               </h3>
               
               {/* List Categories */}
               <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                {CATEGORIES.map((cat) => (
+                {categoriesList.map((cat) => (
                   <div key={cat.id} className="flex items-center justify-between px-3 py-2 border border-gray-100 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
                     <span className="text-xs text-gray-700 font-semibold">{cat.name}</span>
                   </div>

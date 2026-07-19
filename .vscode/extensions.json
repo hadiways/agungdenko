@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "valeryanm.vscode-phpsab",
+        "onecentlin.laravel5-snippets",
+        "amiralizadeh9480.laravel-extra-intellisense"
+    ],
+    "unwantedRecommendations": [
+        "ikappas.phpcs"
+    ]
+}

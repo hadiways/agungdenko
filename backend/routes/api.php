@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ContactApiController;
 use App\Http\Controllers\Api\GalleryApiController;
 use App\Http\Controllers\Api\PartnerApiController;
@@ -22,6 +23,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 Route::middleware('throttle:60,1')->group(function () {
     Route::get('/products', [ProductApiController::class, 'index']);
     Route::get('/products/{slug}', [ProductApiController::class, 'show']);
+    Route::get('/categories', [CategoryApiController::class, 'index']);
     Route::get('/services', [ServiceApiController::class, 'index']);
     Route::get('/gallery', [GalleryApiController::class, 'index']);
     Route::get('/partners', [PartnerApiController::class, 'index']);
