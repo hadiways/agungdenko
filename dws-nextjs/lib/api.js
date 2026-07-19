@@ -1,12 +1,12 @@
 export function getApiUrl() {
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const url = process.env.NEXT_PUBLIC_API_URL || "https://agungdenko.asia/api";
   return url.replace(/\/+$/, "");
 }
 
 export function formatProduct(p) {
   if (!p) return null;
   const categoryName = typeof p.category === "object" ? (p.category?.name || "Forklifts") : (p.category || "Forklifts");
-  const thumbnail = p.thumbnail || p.image || "/images/products/forklift-electric.jpg";
+  const thumbnail = p.thumbnail || p.image || p.photo || "/images/products/forklift-electric.jpg";
   
   let images = [thumbnail];
   if (Array.isArray(p.images) && p.images.length > 0) {
@@ -38,7 +38,20 @@ export async function fetchProducts() {
     const res = await fetch(`${apiUrl}/products`, { cache: "no-store" });
     if (!res.ok) return [];
     const json = await res.json();
-    const list = json.data || json;
+    
+    let list = [];
+    if (Array.isArray(json)) {
+      list = json;
+    } else if (json && typeof json === "object") {
+      if (Array.isArray(json.data)) {
+        list = json.data;
+      } else if (json.data && Array.isArray(json.data.data)) {
+        list = json.data.data;
+      } else if (Array.isArray(json.products)) {
+        list = json.products;
+      }
+    }
+
     if (!Array.isArray(list)) return [];
     return list.map(formatProduct);
   } catch (err) {
@@ -55,7 +68,7 @@ export async function fetchProductBySlug(slug) {
     if (!res.ok) return null;
     const json = await res.json();
     if (json.success === false) return null;
-    const data = json.data || json;
+    const data = json.data?.data ? json.data.data[0] : (json.data || json);
     return formatProduct(data);
   } catch (err) {
     console.error(`Failed to fetch product with slug ${slug}:`, err);
