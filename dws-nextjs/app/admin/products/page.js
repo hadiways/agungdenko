@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UploadCloud, Trash2 } from "lucide-react";
+import { UploadCloud, Trash2, Pencil, X, CheckCircle2 } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
   const CATEGORIES = [
     { id: 1, name: "Forklifts" },
@@ -21,6 +24,11 @@ export default function AdminProductsPage() {
     imageFile: null
   });
 
+  const showToast = (msg, type = "success") => {
+    setToastMessage({ text: msg, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   const loadAllProducts = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -29,14 +37,19 @@ export default function AdminProductsPage() {
       if (response.ok) {
         const list = result.data || result;
         if (Array.isArray(list)) {
-          setProducts(list.map(p => ({
-            id: p.id,
-            name: p.name,
-            category: p.category ? p.category.name : "Forklifts",
-            image: p.thumbnail || "/images/products/forklift-electric.jpg",
-            description: p.short_description || p.description,
-            isCustom: true
-          })));
+          setProducts(list.map(p => {
+            const catName = p.category ? (typeof p.category === "object" ? p.category.name : p.category) : "Forklifts";
+            const catObj = CATEGORIES.find(c => c.name.toLowerCase() === catName.toLowerCase());
+            return {
+              id: p.id,
+              name: p.name || "",
+              category: catName,
+              category_id: p.category_id || (catObj ? catObj.id : 1),
+              image: p.thumbnail || p.image || "/images/products/forklift-electric.jpg",
+              description: p.short_description || p.description || "",
+              isCustom: true
+            };
+          }));
         }
       }
     } catch (err) {
@@ -70,6 +83,31 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    const matchedCat = CATEGORIES.find(c => c.name.toLowerCase() === (product.category || "").toLowerCase());
+    setForm({
+      name: product.name,
+      category: matchedCat ? matchedCat.id : (product.category_id || 1),
+      description: product.description,
+      image: product.image,
+      imageFile: null
+    });
+    // Scroll form into view smoothly
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+    setForm({
+      name: "",
+      category: "",
+      description: "",
+      image: "",
+      imageFile: null
+    });
+  };
+
   const sanitizeInput = (str) => {
     if (typeof str !== "string") return str;
     let cleaned = str.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
@@ -78,8 +116,11 @@ export default function AdminProductsPage() {
     return cleaned.trim();
   };
 
-  const handleAddProduct = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     const token = localStorage.getItem("dws_admin_token");
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -88,31 +129,45 @@ export default function AdminProductsPage() {
     formData.append("category_id", form.category);
     formData.append("description", sanitizeInput(form.description));
     formData.append("short_description", sanitizeInput(form.description).slice(0, 150));
+    
     if (form.imageFile) {
       formData.append("thumbnail", form.imageFile);
     }
 
     try {
-      const response = await fetch(`${apiUrl}/products`, {
+      let url = `${apiUrl}/products`;
+      let headers = {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      };
+
+      if (editingProduct) {
+        // Use Laravel method spoofing for multipart/form-data update
+        url = `${apiUrl}/products/${editingProduct.id}`;
+        formData.append("_method", "PUT");
+      }
+
+      const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json",
-        },
+        headers,
         body: formData,
       });
 
       const result = await response.json();
-      if (response.ok && result.success) {
-        alert("Produk berhasil ditambahkan!");
-        setForm({ name: "", category: "", description: "", image: "", imageFile: null });
+
+      if (response.ok && (result.success || result.data || result.id)) {
+        showToast(editingProduct ? "Produk berhasil diperbarui!" : "Produk berhasil ditambahkan!");
+        handleCancelEdit();
         loadAllProducts();
       } else {
-        alert(result.message || "Gagal menambahkan produk.");
+        const errorMsg = result.message || (editingProduct ? "Gagal memperbarui produk." : "Gagal menambahkan produk.");
+        showToast(errorMsg, "error");
       }
     } catch (err) {
-      console.error("Add product error:", err);
-      alert("Gagal terhubung ke API backend.");
+      console.error("Submit product error:", err);
+      showToast("Terjadi kesalahan koneksi ke server.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -132,37 +187,66 @@ export default function AdminProductsPage() {
 
         const result = await response.json();
         if (response.ok && result.success) {
-          alert("Produk berhasil dihapus!");
+          showToast("Produk berhasil dihapus!");
+          if (editingProduct?.id === id) {
+            handleCancelEdit();
+          }
           loadAllProducts();
         } else {
-          alert(result.message || "Gagal menghapus produk.");
+          showToast(result.message || "Gagal menghapus produk.", "error");
         }
       } catch (err) {
         console.error("Delete product error:", err);
-        alert("Gagal terhubung ke API backend.");
+        showToast("Gagal terhubung ke API backend.", "error");
       }
     }
   };
 
   return (
-    <div className="space-y-8 flex flex-col justify-between min-h-[80vh]">
+    <div className="space-y-8 flex flex-col justify-between min-h-[80vh] relative">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-bold transition-all duration-300 ${
+          toastMessage.type === "error" 
+            ? "bg-red-50 text-red-700 border-red-200" 
+            : "bg-green-50 text-green-700 border-green-200"
+        }`}>
+          <CheckCircle2 size={16} />
+          <span>{toastMessage.text}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <div className="space-y-8">
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
           <div>
             <h1 className="text-brand-darkBg font-display font-extrabold text-2xl md:text-3xl">Manajemen Produk</h1>
-            <p className="text-gray-500 text-sm mt-1">Kelola katalog forklift dan alat berat PT Denko Wahana Sakti secara dinamis (tanpa database).</p>
+            <p className="text-gray-500 text-sm mt-1">Kelola katalog forklift dan alat berat PT Denko Wahana Sakti secara dinamis via Laravel API.</p>
           </div>
         </div>
 
         {/* Main Layout: Form Left, Active Products Right */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Form upload produk */}
+          {/* Form upload / edit produk */}
           <div className="space-y-6 h-fit">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6 h-fit">
-              <h3 className="text-brand-darkBg font-display font-bold text-lg border-b border-gray-100 pb-4">Tambah Produk Baru</h3>
+            <div className={`bg-white rounded-2xl p-6 shadow-sm border transition-all duration-300 space-y-6 h-fit ${
+              editingProduct ? "border-brand-blue ring-2 ring-brand-blue/10" : "border-gray-100"
+            }`}>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <h3 className="text-brand-darkBg font-display font-bold text-lg">
+                  {editingProduct ? "Edit Produk" : "Tambah Produk Baru"}
+                </h3>
+                {editingProduct && (
+                  <span className="text-[10px] bg-brand-blue/10 text-brand-blue border border-brand-blue/20 font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    Mode Edit
+                  </span>
+                )}
+              </div>
             
-            <form onSubmit={handleAddProduct} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Nama Produk</label>
                 <input
@@ -193,12 +277,15 @@ export default function AdminProductsPage() {
               </div>
               
               <div>
-                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">Upload Gambar Produk</label>
+                <label className="block text-gray-500 text-xs font-bold uppercase mb-2">
+                  Gambar Produk {editingProduct && <span className="normal-case text-gray-400 font-normal">(Opsional jika tidak diganti)</span>}
+                </label>
                 <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-brand-blue transition-colors cursor-pointer group relative overflow-hidden min-h-[140px]">
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                   {form.image ? (
-                    <div className="w-full h-24 flex items-center justify-center">
-                      <img src={form.image} alt="Preview" className="max-h-full max-w-full object-contain" />
+                    <div className="w-full h-28 flex flex-col items-center justify-center gap-2">
+                      <img src={form.image} alt="Preview" className="max-h-20 max-w-full object-contain" />
+                      <span className="text-[10px] text-brand-blue font-bold group-hover:underline">Klik untuk mengganti gambar</span>
                     </div>
                   ) : (
                     <>
@@ -223,12 +310,31 @@ export default function AdminProductsPage() {
                 ></textarea>
               </div>
 
-              <button
-                type="submit"
-                className="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150"
-              >
-                Simpan Produk Kustom
-              </button>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`flex-1 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg hover:shadow-brand-blue/20 active:scale-95 transition-all duration-150 ${
+                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  {isSubmitting 
+                    ? (editingProduct ? "Updating..." : "Menyimpan...") 
+                    : (editingProduct ? "Update Produk" : "Simpan Produk Kustom")
+                  }
+                </button>
+
+                {editingProduct && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSubmitting}
+                    className="px-5 border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                )}
+              </div>
             </form>
             </div>
 
@@ -262,34 +368,53 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {products.map((p) => (
-                <div key={p.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 group">
-                  <div className="w-20 h-20 rounded-xl bg-brand-lightBg flex-shrink-0 flex items-center justify-center p-2 border border-gray-100 overflow-hidden">
-                    <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-brand-blue font-bold text-[9px] uppercase tracking-wider bg-brand-blue/10 px-2 py-0.5 rounded">{p.category}</span>
-                      {p.isCustom && (
-                        <span className="text-green-600 font-bold text-[9px] uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded">Kustom</span>
-                      )}
+              {products.map((p) => {
+                const isSelectedForEdit = editingProduct?.id === p.id;
+
+                return (
+                  <div 
+                    key={p.id} 
+                    className={`bg-white border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4 group ${
+                      isSelectedForEdit 
+                        ? "border-brand-blue ring-2 ring-brand-blue/20 bg-blue-50/30" 
+                        : "border-gray-100"
+                    }`}
+                  >
+                    <div className="w-20 h-20 rounded-xl bg-brand-lightBg flex-shrink-0 flex items-center justify-center p-2 border border-gray-100 overflow-hidden">
+                      <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200" />
                     </div>
-                    <h4 className="text-brand-darkBg font-bold text-sm truncate mt-1.5">{p.name}</h4>
-                    <p className="text-gray-400 text-xs truncate mt-0.5">{p.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-brand-blue font-bold text-[9px] uppercase tracking-wider bg-brand-blue/10 px-2 py-0.5 rounded">{p.category}</span>
+                      </div>
+                      <h4 className="text-brand-darkBg font-bold text-sm truncate mt-1.5">{p.name}</h4>
+                      <p className="text-gray-400 text-xs truncate mt-0.5">{p.description}</p>
+                    </div>
+
+                    {/* Action buttons: Edit & Delete */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleEditClick(p)}
+                        className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                          isSelectedForEdit 
+                            ? "bg-brand-blue text-white" 
+                            : "text-gray-400 hover:text-brand-blue hover:bg-brand-blue/10"
+                        }`}
+                        title="Edit Produk"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(p.id)}
+                        className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors cursor-pointer"
+                        title="Hapus Produk"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  {p.isCustom ? (
-                    <button
-                      onClick={() => handleDeleteProduct(p.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                      title="Hapus Produk"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <span className="text-[10px] text-gray-300 font-semibold px-2 py-1 select-none">System</span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

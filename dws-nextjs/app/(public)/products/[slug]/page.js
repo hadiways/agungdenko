@@ -4,28 +4,32 @@ import { fetchProductBySlug } from "@/lib/api";
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const slug = resolvedParams?.slug;
-  const product = await fetchProductBySlug(slug);
-
-  if (!product) {
-    return {
-      title: "Produk Tidak Ditemukan - PT Denko Wahana Sakti",
-      description: "Halaman atau produk yang Anda cari tidak ditemukan di katalog PT Denko Wahana Sakti."
-    };
+  
+  try {
+    const product = await fetchProductBySlug(slug);
+    if (product) {
+      return {
+        title: `${product.name} - PT Denko Wahana Sakti`,
+        description: product.short_description || product.description || `Jual ${product.name} garansi resmi distributor PT Denko Wahana Sakti Semarang.`,
+        openGraph: {
+          title: `${product.name} | PT Denko Wahana Sakti`,
+          description: product.short_description || product.description,
+          images: [
+            {
+              url: product.image,
+              alt: product.name
+            }
+          ]
+        }
+      };
+    }
+  } catch (err) {
+    // Graceful fallback for offline build / API downtime
   }
 
   return {
-    title: `${product.name} - PT Denko Wahana Sakti`,
-    description: product.short_description || product.description || `Jual ${product.name} garansi resmi distributor PT Denko Wahana Sakti Semarang.`,
-    openGraph: {
-      title: `${product.name} | PT Denko Wahana Sakti`,
-      description: product.short_description || product.description,
-      images: [
-        {
-          url: product.image,
-          alt: product.name
-        }
-      ]
-    }
+    title: "Detail Produk - PT Denko Wahana Sakti",
+    description: "Lihat spesifikasi dan detail produk material handling PT Denko Wahana Sakti."
   };
 }
 
@@ -35,4 +39,3 @@ export default async function ProductDetailPage({ params }) {
 
   return <ProductDetailClient slug={slug} />;
 }
-

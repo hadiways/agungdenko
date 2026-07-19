@@ -171,11 +171,6 @@ export default function Home() {
       }
     }
     fetchCMSData();
-      } catch (err) {
-        console.error("Failed to fetch CMS content", err);
-      }
-    }
-    fetchCMSData();
 
     return () => observer.disconnect();
   }, []);
