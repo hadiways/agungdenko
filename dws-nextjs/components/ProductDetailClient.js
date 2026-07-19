@@ -9,9 +9,12 @@ import {
   ArrowRight, 
   MessageSquare, 
   Download,
-  FileText
+  FileText,
+  AlertCircle,
+  ArrowLeft
 } from "lucide-react";
 import ProductCarousel from "@/components/ProductCarousel";
+import { fetchProductBySlug, fetchProducts } from "@/lib/api";
 
 // Category details configuration
 const CATEGORY_DETAILS = {
@@ -35,6 +38,7 @@ const CATEGORY_DETAILS = {
 
 // Brand extraction helper
 const getProductBrand = (product) => {
+  if (!product) return null;
   const name = (product.name || "").toLowerCase();
   const desc = (product.description || "").toLowerCase();
   if (name.includes("dalton") || desc.includes("dalton")) return "Dalton";
@@ -49,41 +53,106 @@ const getProductBrand = (product) => {
   return null;
 };
 
-export default function ProductDetailClient({ initialProduct, relatedProducts }) {
-  const [product, setProduct] = useState(initialProduct);
-  const [activeImg, setActiveImg] = useState(initialProduct?.image || "");
+export default function ProductDetailClient({ slug }) {
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [activeImg, setActiveImg] = useState("");
   const [activeTab, setActiveTab] = useState("deskripsi");
 
   useEffect(() => {
-    async function loadFreshProduct() {
-      if (!initialProduct) return;
+    async function loadData() {
+      if (!slug) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(false);
+
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-        const response = await fetch(`${apiUrl}/products/${initialProduct.slug}`);
-        const result = await response.json();
-        if (response.ok && result.success) {
-          const p = result.data;
-          const mapped = {
-            id: p.id,
-            name: p.name,
-            slug: p.slug,
-            category: p.category ? p.category.name : "Forklifts",
-            image: p.thumbnail || "/images/products/forklift-electric.jpg",
-            description: p.description,
-            specification: p.specification,
-            isCustom: true
-          };
-          setProduct(mapped);
-          setActiveImg(mapped.image);
+        const fetchedProduct = await fetchProductBySlug(slug);
+        if (!fetchedProduct) {
+          setError(true);
+          setProduct(null);
+          setLoading(false);
+          return;
         }
+
+        setProduct(fetchedProduct);
+        setActiveImg(fetchedProduct.image);
+
+        // Fetch related products from API
+        try {
+          const allProducts = await fetchProducts();
+          const related = allProducts
+            .filter(p => p.category === fetchedProduct.category && p.slug !== fetchedProduct.slug && p.id !== fetchedProduct.id)
+            .slice(0, 8);
+          setRelatedProducts(related);
+        } catch (errRel) {
+          console.warn("Failed to load related products:", errRel);
+          setRelatedProducts([]);
+        }
+
+        setLoading(false);
       } catch (err) {
-        console.error("Failed to load fresh product details on client", err);
+        console.error("Failed to load product detail:", err);
+        setError(true);
+        setProduct(null);
+        setLoading(false);
       }
     }
-    loadFreshProduct();
-  }, [initialProduct]);
 
-  if (!product) return null;
+    loadData();
+  }, [slug]);
+
+  // Loading skeleton state
+  if (loading) {
+    return (
+      <div className="bg-brand-lightBg min-h-screen pt-32 pb-24 px-6 md:px-12">
+        <div className="container mx-auto max-w-6xl animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
+            <div className="lg:col-span-7 aspect-[4/3] bg-gray-200 rounded-3xl"></div>
+            <div className="lg:col-span-5 space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-40 bg-gray-200 rounded-2xl"></div>
+              <div className="h-12 bg-gray-200 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 404 / Not Found Error state
+  if (error || !product) {
+    return (
+      <div className="bg-brand-lightBg min-h-[70vh] pt-32 pb-24 px-6 flex items-center justify-center text-center">
+        <div className="max-w-md mx-auto bg-white p-8 md:p-12 rounded-3xl border border-brand-blueLight/20 shadow-lg flex flex-col items-center">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6">
+            <AlertCircle size={32} />
+          </div>
+          <h1 className="text-2xl font-display font-extrabold text-brand-darkBg mb-3">
+            Produk Tidak Ditemukan
+          </h1>
+          <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+            Maaf, produk yang Anda cari tidak tersedia di sistem kami atau URL yang dimasukkan salah.
+          </p>
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-md shadow-brand-blue/20"
+          >
+            <ArrowLeft size={16} />
+            <span>Kembali ke Katalog Produk</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const brandName = getProductBrand(product);
   const getProductTagline = (p) => {
@@ -312,7 +381,7 @@ export default function ProductDetailClient({ initialProduct, relatedProducts })
               <div className="space-y-4">
                 <h4 className="text-brand-darkBg font-bold text-lg">Deskripsi Produk</h4>
                 <p className="whitespace-pre-line text-sm sm:text-base">
-                  {product.description || `Toyota 8FD30 merupakan forklift diesel berkualitas tinggi yang dirancang untuk memberikan performa maksimal, efisiensi bahan bakar, dan daya tahan luar biasa dalam berbagai kondisi kerja.`}
+                  {product.description || `Produk berkualitas tinggi dari PT Denko Wahana Sakti yang dirancang untuk memberikan performa maksimal, efisiensi bahan bakar/daya, dan daya tahan luar biasa dalam berbagai kondisi kerja.`}
                 </p>
               </div>
             )}

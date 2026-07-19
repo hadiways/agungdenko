@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import scrapedProducts from "@/data/scraped_products.json";
 import { UploadCloud, Trash2 } from "lucide-react";
 
 export default function AdminProductsPage() {

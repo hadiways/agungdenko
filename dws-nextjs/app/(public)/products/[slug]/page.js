@@ -1,29 +1,38 @@
-import scrapedProducts from "@/data/scraped_products.json";
 import ProductDetailClient from "@/components/ProductDetailClient";
+import { fetchProductBySlug } from "@/lib/api";
 
-// Mandatory for static exports in Next.js App Router
-export async function generateStaticParams() {
-  return scrapedProducts.map((p) => ({
-    slug: p.slug,
-  }));
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  const product = await fetchProductBySlug(slug);
+
+  if (!product) {
+    return {
+      title: "Produk Tidak Ditemukan - PT Denko Wahana Sakti",
+      description: "Halaman atau produk yang Anda cari tidak ditemukan di katalog PT Denko Wahana Sakti."
+    };
+  }
+
+  return {
+    title: `${product.name} - PT Denko Wahana Sakti`,
+    description: product.short_description || product.description || `Jual ${product.name} garansi resmi distributor PT Denko Wahana Sakti Semarang.`,
+    openGraph: {
+      title: `${product.name} | PT Denko Wahana Sakti`,
+      description: product.short_description || product.description,
+      images: [
+        {
+          url: product.image,
+          alt: product.name
+        }
+      ]
+    }
+  };
 }
 
-// Server-side page routing entry
 export default async function ProductDetailPage({ params }) {
   const resolvedParams = await params;
-  
-  // Find product in initial data list
-  const product = scrapedProducts.find((p) => p.slug === resolvedParams.slug);
-  
-  // Find related base products
-  const related = product 
-    ? scrapedProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 8)
-    : [];
+  const slug = resolvedParams?.slug;
 
-  return (
-    <ProductDetailClient 
-      initialProduct={product} 
-      relatedProducts={related} 
-    />
-  );
+  return <ProductDetailClient slug={slug} />;
 }
+

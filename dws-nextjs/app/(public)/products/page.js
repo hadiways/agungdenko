@@ -2,41 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import scrapedProducts from "@/data/scraped_products.json";
-import { Package, Wrench, Disc, Wind, Grid } from "lucide-react";
+import { Package, Grid } from "lucide-react";
+import { fetchProducts } from "@/lib/api";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("Semua");
 
   useEffect(() => {
     async function loadProducts() {
+      setLoading(true);
       try {
-        const baseProducts = scrapedProducts || [];
-        setProducts(baseProducts.map(p => ({
-          ...p,
-          isCustom: false
-        })));
-
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-        const response = await fetch(`${apiUrl}/products`);
-        const result = await response.json();
-        if (response.ok) {
-          const list = result.data || result;
-          if (Array.isArray(list) && list.length > 0) {
-            setProducts(list.map(p => ({
-              id: p.id,
-              name: p.name,
-              slug: p.slug,
-              category: p.category ? p.category.name : "Forklifts",
-              image: p.thumbnail || "/images/products/forklift-electric.jpg",
-              description: p.short_description || p.description,
-              isCustom: true
-            })));
-          }
-        }
+        const list = await fetchProducts();
+        setProducts(list);
       } catch (err) {
         console.error("Failed to load products from API", err);
+      } finally {
+        setLoading(false);
       }
     }
     loadProducts();
@@ -49,10 +32,6 @@ export default function ProductsPage() {
       }
     }
   }, []);
-
-  const triggerSelectProduct = (productName) => {
-    window.dispatchEvent(new CustomEvent("select-product", { detail: productName }));
-  };
 
   return (
     <>
@@ -106,6 +85,17 @@ export default function ProductsPage() {
         <div className="container mx-auto">
           <div id="product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {(() => {
+              if (loading) {
+                return Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="bg-brand-lightBg/50 border border-brand-blueLight/20 rounded-3xl p-5 shadow-sm animate-pulse space-y-4">
+                    <div className="aspect-[4/3] bg-gray-200 rounded-2xl"></div>
+                    <div className="h-5 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                  </div>
+                ));
+              }
+
               const displayed = selectedCategory === "Semua"
                 ? products
                 : products.filter(p => p.category === selectedCategory);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { sanityFetch } from "@/lib/sanity/fetch";
-import scrapedProducts from "@/data/scraped_products.json";
+import { fetchProducts } from "@/lib/api";
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -25,19 +25,15 @@ export default function Footer() {
   const [productList, setProductList] = useState([]);
 
   useEffect(() => {
-    const baseProducts = scrapedProducts || [];
-    const saved = localStorage.getItem("custom_products");
-    if (saved) {
+    async function loadFooterProducts() {
       try {
-        const custom = JSON.parse(saved);
-        setProductList([...custom, ...baseProducts]);
-      } catch (e) {
-        console.error("Failed to parse custom products for footer", e);
-        setProductList(baseProducts);
+        const products = await fetchProducts();
+        setProductList(products || []);
+      } catch (err) {
+        console.error("Failed to load footer product list", err);
       }
-    } else {
-      setProductList(baseProducts);
     }
+    loadFooterProducts();
   }, []);
 
   useEffect(() => {

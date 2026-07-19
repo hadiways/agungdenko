@@ -10,7 +10,7 @@ import {
   FEATURES_QUERY,
   GALLERY_QUERY
 } from "@/lib/sanity/queries";
-import scrapedProducts from "@/data/scraped_products.json";
+import { fetchProducts } from "@/lib/api";
 import HeroIndustryRotator from "@/components/HeroIndustryRotator";
 import ProductCarousel from "@/components/ProductCarousel";
 import { ShieldCheck, Tag, Zap, Package, FileText, ArrowRight, MessageSquare, Wrench, Disc, Wind, Grid, Search } from "lucide-react";
@@ -114,15 +114,15 @@ export default function Home() {
     // Load dynamic CMS and local custom data
     async function fetchCMSData() {
       try {
-        const [cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery] = await Promise.all([
+        const [cmsServices, cmsTestimonials, cmsPartners, cmsFeatures, cmsGallery, apiProducts] = await Promise.all([
           sanityFetch(SERVICES_QUERY).catch((err) => { console.warn("Failed to fetch CMS services", err); return []; }),
           sanityFetch(TESTIMONIALS_QUERY).catch((err) => { console.warn("Failed to fetch CMS testimonials", err); return []; }),
           sanityFetch(PARTNERS_QUERY).catch((err) => { console.warn("Failed to fetch CMS partners", err); return []; }),
           sanityFetch(FEATURES_QUERY).catch((err) => { console.warn("Failed to fetch CMS features", err); return []; }),
-          sanityFetch(GALLERY_QUERY).catch((err) => { console.warn("Failed to fetch CMS gallery", err); return []; })
+          sanityFetch(GALLERY_QUERY).catch((err) => { console.warn("Failed to fetch CMS gallery", err); return []; }),
+          fetchProducts().catch((err) => { console.warn("Failed to fetch API products", err); return []; })
         ]);
 
-        const baseProducts = scrapedProducts || [];
         const baseServices = cmsServices || [];
         const baseTestimonials = cmsTestimonials || [];
         const basePartners = cmsPartners || [];
@@ -164,30 +164,13 @@ export default function Home() {
           catch (e) { setGalleryItems(baseGallery); }
         } else { setGalleryItems(baseGallery); }
 
-        // 6. Products
-        let finalProducts = baseProducts;
-        try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-          const response = await fetch(`${apiUrl}/products`);
-          const result = await response.json();
-          if (response.ok) {
-            const list = result.data || result;
-            if (Array.isArray(list) && list.length > 0) {
-              finalProducts = list.map(p => ({
-                id: p.id,
-                name: p.name,
-                slug: p.slug,
-                category: p.category ? p.category.name : "Forklifts",
-                image: p.thumbnail || "/images/products/forklift-electric.jpg",
-                description: p.short_description || p.description,
-                isCustom: true
-              }));
-            }
-          }
-        } catch (err) {
-          console.error("Failed to load products from API on homepage", err);
-        }
-        setProducts(finalProducts);
+        // 6. Products from Laravel API
+        setProducts(apiProducts || []);
+      } catch (err) {
+        console.error("Failed to fetch CMS content", err);
+      }
+    }
+    fetchCMSData();
       } catch (err) {
         console.error("Failed to fetch CMS content", err);
       }
