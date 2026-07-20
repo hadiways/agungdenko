@@ -200,20 +200,44 @@ chmod -R 775 $BACKEND_DIR/storage
 chmod -R 775 $BACKEND_DIR/bootstrap/cache
 
 # ==========================================
-# FRONTEND DEPLOYMENT (Next.js Static Export)
+# FRONTEND DEPLOYMENT (Next.js Node.js Runtime)
 # ==========================================
 echo ""
-echo "🌐 Deploy Frontend (Next.js Static Export + Caddy)..."
+echo "🌐 Deploy Frontend (Next.js Node.js Runtime Server)..."
 cd $FRONTEND_DIR
 
-if [ -d "out" ] && [ -f "out/index.html" ]; then
-    echo "✅ Frontend sudah di-build di runner, melewati npm build."
-else
-    echo "📦 Install frontend dependencies..."
-    npm install --legacy-peer-deps
-    echo "🏗️ Building Next.js application..."
-    npm run build
+echo "📦 Install frontend dependencies..."
+npm install --legacy-peer-deps
+echo "🏗️ Building Next.js application..."
+npm run build
+
+# Systemd Next.js Service setup
+if [ ! -f "/etc/systemd/system/next.service" ]; then
+    echo "⚙️ Creating /etc/systemd/system/next.service..."
+    cat > /etc/systemd/system/next.service << 'NEXTSVC'
+[Unit]
+Description=Next.js Production Server
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/opt/dws-portal/dws-nextjs
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+[Install]
+WantedBy=multi-user.target
+NEXTSVC
+    systemctl daemon-reload
+    systemctl enable next
 fi
+
+echo "🔄 Restarting Next.js runtime service..."
+systemctl restart next || systemctl start next
 
 # ==========================================
 # SANITY STUDIO DEPLOYMENT

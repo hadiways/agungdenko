@@ -42,11 +42,9 @@ agungdenko.asia {
 		php_fastcgi unix//run/php-fpm/www.sock
 	}
 
-	# ── Frontend Static Files ────────────────────────────────
+	# ── Frontend Next.js Runtime (Node.js Server) ─────────────
 	handle {
-		root * /opt/dws-portal/dws-nextjs/out
-		try_files {path} {path}.html {path}/index.html /index.html
-		file_server
+		reverse_proxy 127.0.0.1:3000
 	}
 
 	# Cache asset statis 30 hari
