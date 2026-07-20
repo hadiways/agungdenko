@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             SettingSeeder::class,
             CategorySeeder::class,
-            ProductSeeder::class,
         ]);
 
         // Seed Services
