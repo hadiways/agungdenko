@@ -1,6 +1,3 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import ProductDetailClient from "@/components/ProductDetailClient";
 import { fetchProductBySlug } from "@/lib/api";
 
