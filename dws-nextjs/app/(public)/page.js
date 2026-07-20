@@ -335,10 +335,10 @@ export default function Home() {
             <div className="flex gap-6 border-b border-gray-100 pb-3 overflow-x-auto scrollbar-none">
               {[
                 { name: "Semua", icon: <Grid size={16} /> },
-                { name: "Material Handling", icon: <Package size={16} /> },
-                { name: "Dalton Hardware Tools", icon: <Wrench size={16} /> },
-                { name: "Castor Wheel Division", icon: <Disc size={16} /> },
-                { name: "Turbin Ventilator", icon: <Wind size={16} /> }
+                ...[...new Set(products.map((p) => p.category).filter(Boolean))].map((catName) => ({
+                  name: catName,
+                  icon: <Package size={16} />
+                }))
               ].map((cat) => (
                 <button
                   key={cat.name}
@@ -445,13 +445,6 @@ export default function Home() {
 
           <div className="space-y-16">
             {(() => {
-              const categoriesList = [
-                "Material Handling",
-                "Dalton Hardware Tools",
-                "Castor Wheel Division",
-                "Turbin Ventilator"
-              ];
-
               const filteredProducts = products
                 .filter((p) => {
                   // Category Tab Filter
@@ -483,6 +476,14 @@ export default function Home() {
                   }
                   return 0; // default
                 });
+
+              const categoriesList = [
+                ...new Set(
+                  filteredProducts
+                    .map((p) => p.category)
+                    .filter(Boolean)
+                )
+              ];
 
               const groupedProducts = {};
               categoriesList.forEach((cat) => {
