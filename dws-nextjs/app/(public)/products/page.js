@@ -102,7 +102,7 @@ export default function ProductsPage() {
               if (!displayed || displayed.length === 0) {
                 return (
                   <div className="col-span-full text-center text-gray-500 py-12 text-sm">
-                    Tidak ada produk yang tersedia dalam kategori ini.
+                    Belum ada produk tersedia.
                   </div>
                 );
               }

@@ -140,7 +140,7 @@ export default function ProductDetailClient({ slug }) {
             Produk Tidak Ditemukan
           </h1>
           <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-            Maaf, produk yang Anda cari tidak tersedia di sistem kami atau URL yang dimasukkan salah.
+            Belum ada produk tersedia.
           </p>
           <Link
             href="/products"

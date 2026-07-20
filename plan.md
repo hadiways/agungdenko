@@ -76,4 +76,10 @@ Create a high-end, professional, and modern company profile, landing page, and S
     *   Remove `cheerio` dependency and `scrape` scripts in `package.json` files.
     *   Verify product endpoints (`GET /api/products`, `GET /api/products/{slug}`, `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`) and DB-only data flow.
     *   Clear Laravel caches and verify clean build.
+*   [x] **Task 11: Enforce DB-Only Product Data & Remove Legacy Static HTML**
+    *   Delete legacy root `.html` and `admin/*.html` files containing static product listings.
+    *   Remove hardcoded image fallback strings and `PRODUCTS_QUERY` from Sanity queries.
+    *   Enforce dynamic rendering (`force-dynamic`, `revalidate = 0`, `cache: "no-store"`).
+    *   Set fallback message when 0 DB products exist to `"Belum ada produk tersedia."`.
+    *   Clean `.next` cache and run production build.
 

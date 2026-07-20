@@ -158,18 +158,6 @@ export const ALL_TAGS_QUERY = `
   }
 `;
 
-export const PRODUCTS_QUERY = `
-  *[_type == "product"] | order(name asc) {
-    _id,
-    "id": _id,
-    name,
-    "image": image.asset->url,
-    category,
-    description,
-    specs
-  }
-`;
-
 export const SERVICES_QUERY = `
   *[_type == "service"] | order(title asc) {
     _id,

@@ -496,7 +496,7 @@ export default function Home() {
               if (activeCategories.length === 0) {
                 return (
                   <div className="text-center text-gray-500 py-12 text-sm bg-white rounded-3xl p-8 border border-blue-100/50 shadow-sm">
-                    Tidak ada produk yang sesuai dengan kriteria filter Anda.
+                    Belum ada produk tersedia.
                   </div>
                 );
               }

@@ -369,7 +369,12 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {products.map((p) => {
+              {products.length === 0 ? (
+                <div className="col-span-full text-center text-gray-500 py-12 text-sm bg-white rounded-2xl border border-gray-100">
+                  Belum ada produk tersedia.
+                </div>
+              ) : (
+                products.map((p) => {
                 const isSelectedForEdit = editingProduct?.id === p.id;
 
                 return (
@@ -415,7 +420,7 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
           </div>
         </div>

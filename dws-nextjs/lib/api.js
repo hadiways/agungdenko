@@ -5,10 +5,10 @@ export function getApiUrl() {
 
 export function formatProduct(p) {
   if (!p) return null;
-  const categoryName = typeof p.category === "object" ? (p.category?.name || "Forklifts") : (p.category || "Forklifts");
-  const thumbnail = p.thumbnail || p.image || p.photo || "/images/products/forklift-electric.jpg";
+  const categoryName = typeof p.category === "object" ? (p.category?.name || "") : (p.category || "");
+  const thumbnail = p.thumbnail || p.image || p.photo || "";
   
-  let images = [thumbnail];
+  let images = thumbnail ? [thumbnail] : [];
   if (Array.isArray(p.images) && p.images.length > 0) {
     p.images.forEach(img => {
       const url = typeof img === "string" ? img : (img?.url || img?.path);
