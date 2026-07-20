@@ -33,6 +33,10 @@ export function formatProduct(p) {
 }
 
 export async function fetchProducts() {
+  if (typeof window === "undefined") {
+    // Return empty array during SSG / pre-rendering build phase to prevent baking stale static HTML
+    return [];
+  }
   try {
     const apiUrl = getApiUrl();
     const res = await fetch(`${apiUrl}/products`, { cache: "no-store" });
@@ -61,7 +65,7 @@ export async function fetchProducts() {
 }
 
 export async function fetchProductBySlug(slug) {
-  if (!slug) return null;
+  if (!slug || typeof window === "undefined") return null;
   try {
     const apiUrl = getApiUrl();
     const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { cache: "no-store" });
