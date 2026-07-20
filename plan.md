@@ -71,3 +71,9 @@ Create a high-end, professional, and modern company profile, landing page, and S
     *   Remove all redundant folders and files (`index.html`, `public/`, `styles/`, `data/`) from the root workspace directory.
     *   Set the development server port to `3001` to prevent port collisions.
     *   Audit and unify all paths inside the `dws-nextjs/` directory.
+*   [x] **Task 10: Permanent Removal of Scraper Features & Data**
+    *   Delete scraper script (`dws-nextjs/scripts/scrape.js`) and scraped data (`dws-nextjs/data/scraped_products.json`).
+    *   Remove `cheerio` dependency and `scrape` scripts in `package.json` files.
+    *   Verify product endpoints (`GET /api/products`, `GET /api/products/{slug}`, `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`) and DB-only data flow.
+    *   Clear Laravel caches and verify clean build.
+
